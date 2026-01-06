@@ -27,7 +27,11 @@ if (typeof window === 'undefined') {
       console.log(`✅ Cargado .env (${Object.keys(result.parsed || {}).length} variables)`)
     }
   } else {
-    console.error('❌ Archivo .env no encontrado en:', envPath)
+    // En producción (Vercel), las variables de entorno se configuran directamente
+    // No es un error si no existe el archivo .env
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('⚠️ Archivo .env no encontrado en:', envPath)
+    }
   }
   
   // Log para debug (solo en desarrollo)
