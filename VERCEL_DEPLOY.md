@@ -16,10 +16,11 @@ Para que la aplicación funcione correctamente en Vercel, necesitas configurar l
    - Generar con: `openssl rand -base64 32`
    - O usar: `node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"`
 
-3. **NEXTAUTH_URL**
+3. **NEXTAUTH_URL** ⚠️ **IMPORTANTE**
    - URL de tu aplicación en Vercel
-   - Formato: `https://tu-app.vercel.app`
-   - Se configura automáticamente en Vercel, pero puedes sobrescribirlo si es necesario
+   - Formato: `https://tu-app.vercel.app` (sin barra final)
+   - **DEBE estar configurado explícitamente** en Vercel para que las cookies funcionen correctamente
+   - Ejemplo: `https://auditoria-mkmo.vercel.app`
 
 ### Cómo Configurar en Vercel
 
