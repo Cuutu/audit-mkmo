@@ -1,0 +1,46 @@
+import { MetadataRoute } from 'next'
+
+export default function manifest(): MetadataRoute.Manifest {
+  return {
+    name: 'Sistema de Auditoría de Obras',
+    short_name: 'Auditoría Obras',
+    description: 'Gestión y auditoría de obras con seguimiento de procesos',
+    start_url: '/dashboard',
+    display: 'standalone',
+    background_color: '#ffffff',
+    theme_color: '#2563eb',
+    orientation: 'portrait-primary',
+    icons: [
+      {
+        src: '/icon-192.png',
+        sizes: '192x192',
+        type: 'image/png',
+        purpose: 'any',
+      },
+      {
+        src: '/icon-512.png',
+        sizes: '512x512',
+        type: 'image/png',
+        purpose: 'any',
+      },
+    ],
+    categories: ['business', 'productivity'],
+    shortcuts: [
+      {
+        name: 'Nueva Obra',
+        short_name: 'Nueva Obra',
+        description: 'Crear una nueva obra',
+        url: '/dashboard/obras/nueva',
+        icons: [{ src: '/icon-192.png', sizes: '192x192' }],
+      },
+      {
+        name: 'Dashboard',
+        short_name: 'Dashboard',
+        description: 'Ver el dashboard principal',
+        url: '/dashboard',
+        icons: [{ src: '/icon-192.png', sizes: '192x192' }],
+      },
+    ],
+  }
+}
+

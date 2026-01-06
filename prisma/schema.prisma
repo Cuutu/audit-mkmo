@@ -1,0 +1,227 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  ENGINEER
+  ACCOUNTANT
+  VIEWER
+}
+
+enum ObraEstado {
+  NO_INICIADA
+  EN_PROCESO
+  FINALIZADA
+}
+
+enum ProcesoEstado {
+  NO_INICIADO
+  EN_CURSO
+  EN_REVISION
+  APROBADO
+}
+
+enum ResponsableTipo {
+  ENGINEER
+  ACCOUNTANT
+  BOTH
+}
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  UPLOAD
+  DOWNLOAD
+  RESTORE
+}
+
+model User {
+  id                 String         @id @default(auto()) @map("_id") @db.ObjectId
+  email              String         @unique
+  password           String
+  name               String
+  role               Role           @default(VIEWER)
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+  obrasCreadas       Obra[]         @relation("ObraCreatedBy")
+  procesos           Proceso[]
+  archivosSubidos    Archivo[]      @relation("ArchivoSubidoPor")
+  archivosEliminados Archivo[]      @relation("ArchivoDeletedBy")
+  auditLogs          AuditLog[]
+  actividadLogs      ActividadLog[]
+  passwordResetTokens PasswordResetToken[]
+
+  @@map("users")
+}
+
+model Obra {
+  id            String     @id @default(auto()) @map("_id") @db.ObjectId
+  numero        String
+  nombre        String
+  ano           Int
+  mes           Int
+  estado        ObraEstado @default(NO_INICIADA)
+  observaciones String?
+  avance        Int        @default(0) // 0-100
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  createdById   String     @db.ObjectId
+  createdBy     User       @relation("ObraCreatedBy", fields: [createdById], references: [id])
+  procesos      Proceso[]
+  archivos      Archivo[]
+  auditLogs     AuditLog[]
+  deleted       Boolean    @default(false)
+  deletedAt     DateTime?
+
+  @@unique([numero, ano, mes])
+  @@index([createdById])
+  @@index([ano, mes])
+  @@index([estado])
+  @@map("obras")
+}
+
+model Proceso {
+  id              String          @id @default(auto()) @map("_id") @db.ObjectId
+  obraId          String          @db.ObjectId
+  obra            Obra            @relation(fields: [obraId], references: [id])
+  numero          Int // 1-8
+  nombre          String
+  estado          ProcesoEstado   @default(NO_INICIADO)
+  responsable     ResponsableTipo
+  avance          Int             @default(0) // 0-100
+  responsableId   String?         @db.ObjectId
+  responsableUser User?           @relation(fields: [responsableId], references: [id])
+  checklist       Json? // Array de items del checklist
+  datos           Json? // Datos estructurados del proceso
+  observaciones   String?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  archivos        Archivo[]
+  auditLogs       AuditLog[]
+
+  @@unique([obraId, numero])
+  @@index([obraId])
+  @@index([responsableId])
+  @@map("procesos")
+}
+
+model Archivo {
+  id                String     @id @default(auto()) @map("_id") @db.ObjectId
+  nombre            String
+  nombreOriginal    String
+  tipo              String // MIME type
+  tamano            Int // bytes
+  ruta              String // Ruta en el servidor/storage
+  version           Int        @default(1)
+  archivoAnteriorId String?    @db.ObjectId
+  archivoAnterior   Archivo?   @relation("ArchivoVersiones", fields: [archivoAnteriorId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  archivosNuevos    Archivo[]  @relation("ArchivoVersiones")
+  obraId            String?    @db.ObjectId
+  obra              Obra?      @relation(fields: [obraId], references: [id])
+  procesoId         String?    @db.ObjectId
+  proceso           Proceso?   @relation(fields: [procesoId], references: [id])
+  subidoPorId       String     @db.ObjectId
+  subidoPor         User       @relation("ArchivoSubidoPor", fields: [subidoPorId], references: [id])
+  createdAt         DateTime   @default(now())
+  deleted           Boolean    @default(false)
+  deletedAt         DateTime?
+  deletedById       String?    @db.ObjectId
+  deletedBy         User?      @relation("ArchivoDeletedBy", fields: [deletedById], references: [id])
+  auditLogs         AuditLog[]
+
+  @@index([obraId])
+  @@index([procesoId])
+  @@index([subidoPorId])
+  @@map("archivos")
+}
+
+model AuditLog {
+  id            String      @id @default(auto()) @map("_id") @db.ObjectId
+  accion        AuditAction
+  entidad       String // "Obra", "Proceso", "Archivo", "User"
+  entidadId     String
+  campo         String? // Campo modificado
+  valorAnterior String? // JSON string
+  valorNuevo    String? // JSON string
+  userId        String      @db.ObjectId
+  user          User        @relation(fields: [userId], references: [id])
+  obraId        String?     @db.ObjectId
+  obra          Obra?       @relation(fields: [obraId], references: [id])
+  procesoId     String?     @db.ObjectId
+  proceso       Proceso?    @relation(fields: [procesoId], references: [id])
+  archivoId     String?     @db.ObjectId
+  archivo       Archivo?    @relation(fields: [archivoId], references: [id])
+  createdAt     DateTime    @default(now())
+  ipAddress     String?
+  userAgent     String?
+
+  @@index([obraId])
+  @@index([procesoId])
+  @@index([userId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+model ActividadLog {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id])
+  accion    String // Descripción de la acción
+  detalle   String? // Detalle adicional
+  obraId    String?  @db.ObjectId
+  procesoId String?  @db.ObjectId
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
+  @@map("actividad_logs")
+}
+
+model Parametro {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  clave       String   @unique
+  valor       String
+  tipo        String // "string", "number", "json", "boolean"
+  descripcion String?
+  categoria   String? // "obra", "proceso", "reporte", etc.
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("parametros")
+}
+
+model ChecklistTemplate {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  procesoNumero Int // 1-8
+  nombre        String
+  items         Json // Array de items del checklist
+  activo        Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([procesoNumero])
+  @@map("checklist_templates")
+}
+
+model PasswordResetToken {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@map("password_reset_tokens")
+}
