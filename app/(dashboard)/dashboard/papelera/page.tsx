@@ -47,6 +47,17 @@ export default async function PapeleraPage() {
     })
   )
 
-  return <PapeleraClient archivos={archivosConDeletedBy} userRole={session.user.role} />
+  // Obtener obras eliminadas
+  const obrasEliminadas = await prisma.obra.findMany({
+    where: { deleted: true },
+    include: {
+      createdBy: {
+        select: { name: true },
+      },
+    },
+    orderBy: { deletedAt: "desc" },
+  })
+
+  return <PapeleraClient archivos={archivosConDeletedBy} obras={obrasEliminadas} userRole={session.user.role} />
 }
 
