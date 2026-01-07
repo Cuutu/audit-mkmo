@@ -26,6 +26,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const applyTheme = (newTheme: Theme) => {
+    if (typeof document === "undefined") return
     const root = document.documentElement
     if (newTheme === "dark") {
       root.classList.add("dark")
@@ -40,10 +41,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     applyTheme(newTheme)
   }
 
-  if (!mounted) {
-    return <>{children}</>
-  }
-
+  // Siempre proveer el contexto, pero con valores por defecto durante SSR
   return (
     <ThemeContext.Provider value={{ theme, setTheme }}>
       {children}
@@ -53,7 +51,15 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
 export function useTheme() {
   const context = useContext(ThemeContext)
+  // Durante SSR, retornar valores por defecto en lugar de lanzar error
   if (context === undefined) {
+    if (typeof window === "undefined") {
+      // SSR: retornar valores por defecto
+      return {
+        theme: "light" as Theme,
+        setTheme: () => {},
+      }
+    }
     throw new Error("useTheme must be used within ThemeProvider")
   }
   return context
