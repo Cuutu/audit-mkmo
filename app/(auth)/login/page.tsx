@@ -1,8 +1,8 @@
 "use client"
 
-import { useState } from "react"
-import { signIn } from "next-auth/react"
-import { useRouter } from "next/navigation"
+import { useState, useEffect } from "react"
+import { signIn, useSession } from "next-auth/react"
+import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -12,10 +12,20 @@ import Link from "next/link"
 
 export default function LoginPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const { status } = useSession()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
+
+  // Si ya está autenticado, redirigir al dashboard
+  useEffect(() => {
+    if (status === "authenticated") {
+      const callbackUrl = searchParams.get("callbackUrl") || "/dashboard"
+      router.replace(callbackUrl)
+    }
+  }, [status, router, searchParams])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -23,6 +33,8 @@ export default function LoginPage() {
     setLoading(true)
 
     try {
+      const callbackUrl = searchParams.get("callbackUrl") || "/dashboard"
+      
       const result = await signIn("credentials", {
         email,
         password,
@@ -31,13 +43,13 @@ export default function LoginPage() {
 
       if (result?.error) {
         setError("Credenciales inválidas")
-      } else {
-        router.push("/dashboard")
-        router.refresh()
+        setLoading(false)
+      } else if (result?.ok) {
+        // Usar window.location para forzar un hard redirect
+        window.location.href = callbackUrl
       }
     } catch (error) {
       setError("Error al iniciar sesión")
-    } finally {
       setLoading(false)
     }
   }
