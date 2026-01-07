@@ -6,6 +6,8 @@ import { createAuditLog } from "@/lib/audit"
 import { generarExcelGlobal } from "@/lib/reportes/excel-generator"
 import * as XLSX from "xlsx"
 
+export const dynamic = 'force-dynamic'
+
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
