@@ -1,25 +1,34 @@
 "use client"
 
+import { useState } from "react"
 import { useQuery } from "@tanstack/react-query"
 import { formatDateTime } from "@/lib/utils"
+import { Pagination } from "@/components/ui/pagination"
+import { Skeleton } from "@/components/ui/skeleton"
+import { EmptyState } from "@/components/ui/empty-state"
+import { FileText } from "lucide-react"
 
 interface BitacoraTabProps {
   obraId: string
 }
 
 export function BitacoraTab({ obraId }: BitacoraTabProps) {
-  const { data: logs, isLoading } = useQuery({
-    queryKey: ["audit-logs", obraId],
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 20
+
+  const { data: logsData, isLoading } = useQuery({
+    queryKey: ["audit-logs", obraId, currentPage],
     queryFn: async () => {
-      const res = await fetch(`/api/obras/${obraId}/bitacora`)
+      const res = await fetch(`/api/obras/${obraId}/bitacora?page=${currentPage}&limit=${itemsPerPage}`)
       if (!res.ok) throw new Error("Error al cargar bitácora")
       return res.json()
     },
+    staleTime: 2 * 60 * 1000, // 2 minutos
   })
 
-  if (isLoading) {
-    return <div className="text-center py-8">Cargando bitácora...</div>
-  }
+  const logs = logsData?.logs || []
+  const totalPages = logsData?.totalPages || 1
+
 
   const getAccionColor = (accion: string) => {
     switch (accion) {
@@ -135,8 +144,19 @@ export function BitacoraTab({ obraId }: BitacoraTabProps) {
           })}
         </div>
       ) : (
-        <div className="text-center py-12 text-muted-foreground border border-dashed border-border/50 rounded-xl">
-          No hay registros de actividad aún
+        <EmptyState
+          icon={FileText}
+          title="No hay registros"
+          description="Aún no se han registrado actividades para esta obra."
+        />
+      )}
+      {totalPages > 1 && (
+        <div className="mt-6">
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+          />
         </div>
       )}
     </div>

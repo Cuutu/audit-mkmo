@@ -1,6 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import { memo, useState } from "react"
+import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Download, Trash2, Eye, History } from "lucide-react"
 import { formatFileSize, formatDate } from "@/lib/utils"
@@ -22,7 +23,7 @@ interface ArchivoItemProps {
   procesoId?: string
 }
 
-export function ArchivoItem({ archivo, onDelete, obraId, procesoId }: ArchivoItemProps) {
+export const ArchivoItem = memo(function ArchivoItem({ archivo, onDelete, obraId, procesoId }: ArchivoItemProps) {
   const [showPreview, setShowPreview] = useState(false)
   const [showVersiones, setShowVersiones] = useState(false)
 
@@ -30,7 +31,11 @@ export function ArchivoItem({ archivo, onDelete, obraId, procesoId }: ArchivoIte
 
   return (
     <>
-      <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors">
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors"
+      >
         <div className="flex-1">
           <div className="flex items-center gap-2">
             <p className="font-medium">{archivo.nombreOriginal}</p>
@@ -82,7 +87,7 @@ export function ArchivoItem({ archivo, onDelete, obraId, procesoId }: ArchivoIte
             <Trash2 className="h-4 w-4" />
           </Button>
         </div>
-      </div>
+      </motion.div>
 
       {showPreview && (
         <FilePreview
@@ -99,5 +104,5 @@ export function ArchivoItem({ archivo, onDelete, obraId, procesoId }: ArchivoIte
       )}
     </>
   )
-}
+})
 

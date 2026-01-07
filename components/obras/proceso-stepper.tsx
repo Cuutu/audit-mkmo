@@ -1,9 +1,11 @@
 "use client"
 
+import { memo } from "react"
 import { ResponsableTipo, ProcesoEstado } from "@prisma/client"
 import { CheckCircle2, Circle, Clock, AlertCircle } from "lucide-react"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
+import { motion } from "framer-motion"
 
 interface Proceso {
   id: string
@@ -19,7 +21,7 @@ interface ProcesoStepperProps {
   obraId: string
 }
 
-export function ProcesoStepper({ procesos, obraId }: ProcesoStepperProps) {
+export const ProcesoStepper = memo(function ProcesoStepper({ procesos, obraId }: ProcesoStepperProps) {
   const getResponsableColor = (responsable: ResponsableTipo) => {
     switch (responsable) {
       case "ENGINEER":
@@ -63,19 +65,24 @@ export function ProcesoStepper({ procesos, obraId }: ProcesoStepperProps) {
     <div className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {procesos.map((proceso, index) => (
-          <Link
+          <motion.div
             key={proceso.id}
-            href={`/dashboard/obras/${obraId}/procesos/${proceso.numero}`}
-            className="block group"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.05 }}
           >
-            <div
-              className={cn(
-                "p-5 border rounded-xl hover:shadow-medium transition-all duration-200 cursor-pointer bg-white",
-                proceso.estado !== "NO_INICIADO" 
-                  ? "border-primary/30 bg-primary/5 hover:border-primary/50" 
-                  : "border-border/50 hover:border-border hover:bg-accent/30"
-              )}
+            <Link
+              href={`/dashboard/obras/${obraId}/procesos/${proceso.numero}`}
+              className="block group"
             >
+              <div
+                className={cn(
+                  "p-5 border rounded-xl hover:shadow-medium transition-all duration-200 cursor-pointer bg-white",
+                  proceso.estado !== "NO_INICIADO" 
+                    ? "border-primary/30 bg-primary/5 hover:border-primary/50" 
+                    : "border-border/50 hover:border-border hover:bg-accent/30"
+                )}
+              >
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-2.5">
                   <div
@@ -114,11 +121,12 @@ export function ProcesoStepper({ procesos, obraId }: ProcesoStepperProps) {
                   />
                 </div>
               )}
-            </div>
-          </Link>
+              </div>
+            </Link>
+          </motion.div>
         ))}
       </div>
     </div>
   )
-}
+})
 

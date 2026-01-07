@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { useQuery } from "@tanstack/react-query"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -9,6 +9,8 @@ import Link from "next/link"
 import { Plus, Search, Building2, Loader2 } from "lucide-react"
 import { Obra } from "@prisma/client"
 import { Pagination } from "@/components/ui/pagination"
+import { useDebounce } from "@/lib/hooks/use-debounce"
+import { ObraListSkeleton } from "@/components/ui/skeleton"
 
 interface ObraWithProgress extends Obra {
   avance: number
@@ -24,14 +26,17 @@ export default function ObrasPage() {
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 10
 
+  // Debounce de búsqueda para evitar queries excesivas
+  const debouncedSearchTerm = useDebounce(searchTerm, 400)
+
   const { data: obrasData, isLoading } = useQuery<{
     obras: ObraWithProgress[]
     total: number
   }>({
-    queryKey: ["obras", searchTerm, filtroAño, filtroMes, filtroEstado, filtroResponsable],
+    queryKey: ["obras", debouncedSearchTerm, filtroAño, filtroMes, filtroEstado, filtroResponsable, currentPage],
     queryFn: async () => {
       const params = new URLSearchParams()
-      if (searchTerm) params.append("search", searchTerm)
+      if (debouncedSearchTerm) params.append("search", debouncedSearchTerm)
       if (filtroAño) params.append("ano", filtroAño)
       if (filtroMes) params.append("mes", filtroMes)
       if (filtroEstado) params.append("estado", filtroEstado)
@@ -43,6 +48,7 @@ export default function ObrasPage() {
       if (!res.ok) throw new Error("Error al cargar obras")
       return res.json()
     },
+    staleTime: 2 * 60 * 1000, // 2 minutos para datos de obras
   })
 
   const obras = obrasData?.obras || []
@@ -50,10 +56,36 @@ export default function ObrasPage() {
 
   useEffect(() => {
     setCurrentPage(1)
-  }, [searchTerm, filtroAño, filtroMes, filtroEstado, filtroResponsable])
+  }, [debouncedSearchTerm, filtroAño, filtroMes, filtroEstado, filtroResponsable])
 
-  const años = Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - i)
-  const meses = [
+  // Memoizar funciones de estilo para evitar recreaciones
+  const getEstadoColor = useMemo(() => (estado: string) => {
+    switch (estado) {
+      case "FINALIZADA":
+        return "bg-green-100 text-green-800"
+      case "EN_PROCESO":
+        return "bg-yellow-100 text-yellow-800"
+      default:
+        return "bg-gray-100 text-gray-800"
+    }
+  }, [])
+
+  const getProcesoColor = useMemo(() => (responsable: string) => {
+    switch (responsable) {
+      case "ENGINEER":
+        return "bg-red-500"
+      case "ACCOUNTANT":
+        return "bg-gray-900"
+      case "BOTH":
+        return "bg-blue-500"
+      default:
+        return "bg-gray-300"
+    }
+  }, [])
+
+  // Memoizar arrays estáticos
+  const años = useMemo(() => Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - i), [])
+  const meses = useMemo(() => [
     { value: "1", label: "Enero" },
     { value: "2", label: "Febrero" },
     { value: "3", label: "Marzo" },
@@ -66,31 +98,7 @@ export default function ObrasPage() {
     { value: "10", label: "Octubre" },
     { value: "11", label: "Noviembre" },
     { value: "12", label: "Diciembre" },
-  ]
-
-  const getEstadoColor = (estado: string) => {
-    switch (estado) {
-      case "FINALIZADA":
-        return "bg-green-100 text-green-800"
-      case "EN_PROCESO":
-        return "bg-yellow-100 text-yellow-800"
-      default:
-        return "bg-gray-100 text-gray-800"
-    }
-  }
-
-  const getProcesoColor = (responsable: string) => {
-    switch (responsable) {
-      case "ENGINEER":
-        return "bg-red-500"
-      case "ACCOUNTANT":
-        return "bg-gray-900"
-      case "BOTH":
-        return "bg-blue-500"
-      default:
-        return "bg-gray-300"
-    }
-  }
+  ], [])
 
   return (
     <div className="space-y-8">
@@ -180,10 +188,7 @@ export default function ObrasPage() {
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="text-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin mx-auto mb-3 text-primary" />
-              <p className="text-muted-foreground">Cargando obras...</p>
-            </div>
+            <ObraListSkeleton />
           ) : obras && obras.length > 0 ? (
             <div className="space-y-3">
               {obras.map((obra) => (
@@ -219,14 +224,15 @@ export default function ObrasPage() {
                         {obra.estado.replace("_", " ")}
                       </span>
                       {/* Semáforos de procesos */}
-                      <div className="flex gap-1 flex-shrink-0">
+                      <div className="flex gap-1 flex-shrink-0" role="group" aria-label="Estado de procesos">
                         {Array.from({ length: 8 }).map((_, i) => {
                           const proceso = obra.procesos?.[i]
                           return (
                             <div
                               key={i}
                               className={`w-3 h-3 rounded-full transition-all ${proceso ? getProcesoColor(proceso.responsable) : "bg-gray-200"}`}
-                              title={`Proceso ${i + 1}`}
+                              title={`Proceso ${i + 1}: ${proceso ? proceso.responsable : "No iniciado"}`}
+                              aria-label={`Proceso ${i + 1}`}
                             />
                           )
                         })}

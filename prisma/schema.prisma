@@ -88,6 +88,9 @@ model Obra {
   @@index([createdById])
   @@index([ano, mes])
   @@index([estado])
+  @@index([deleted, estado])
+  @@index([deleted, ano, mes])
+  @@index([numero, deleted])
   @@map("obras")
 }
 
@@ -113,6 +116,8 @@ model Proceso {
   @@unique([obraId, numero])
   @@index([obraId])
   @@index([responsableId])
+  @@index([estado, updatedAt])
+  @@index([obraId, estado])
   @@map("procesos")
 }
 
@@ -143,6 +148,9 @@ model Archivo {
   @@index([obraId])
   @@index([procesoId])
   @@index([subidoPorId])
+  @@index([deleted, deletedAt])
+  @@index([obraId, deleted])
+  @@index([procesoId, deleted])
   @@map("archivos")
 }
 
@@ -170,6 +178,8 @@ model AuditLog {
   @@index([procesoId])
   @@index([userId])
   @@index([createdAt])
+  @@index([obraId, createdAt])
+  @@index([entidad, accion])
   @@map("audit_logs")
 }
 

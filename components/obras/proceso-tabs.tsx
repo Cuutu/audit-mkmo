@@ -1,13 +1,16 @@
 "use client"
 
-import { useState } from "react"
+import { useState, Suspense, lazy } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Obra, Proceso, User } from "@prisma/client"
-import { ResumenTab } from "./tabs/resumen-tab"
-import { ProcesosTab } from "./tabs/procesos-tab"
-import { ArchivosTab } from "./tabs/archivos-tab"
-import { BitacoraTab } from "./tabs/bitacora-tab"
-import { ReportesTab } from "./tabs/reportes-tab"
+import { Skeleton } from "@/components/ui/skeleton"
+
+// Lazy loading de tabs para mejorar performance
+const ResumenTab = lazy(() => import("./tabs/resumen-tab").then(m => ({ default: m.ResumenTab })))
+const ProcesosTab = lazy(() => import("./tabs/procesos-tab").then(m => ({ default: m.ProcesosTab })))
+const ArchivosTab = lazy(() => import("./tabs/archivos-tab").then(m => ({ default: m.ArchivosTab })))
+const BitacoraTab = lazy(() => import("./tabs/bitacora-tab").then(m => ({ default: m.BitacoraTab })))
+const ReportesTab = lazy(() => import("./tabs/reportes-tab").then(m => ({ default: m.ReportesTab })))
 
 type ObraWithRelations = Obra & {
   procesos: (Proceso & {
@@ -42,6 +45,10 @@ export function ProcesoTabs({ obra, tabActivo, onTabChange }: ProcesoTabsProps) 
             <button
               key={tab.id}
               onClick={() => onTabChange(tab.id)}
+              role="tab"
+              aria-selected={tabActivo === tab.id}
+              aria-controls={`tabpanel-${tab.id}`}
+              id={`tab-${tab.id}`}
               className={`px-4 py-3 font-medium text-sm border-b-2 transition-all duration-200 relative ${
                 tabActivo === tab.id
                   ? "border-primary text-primary"
@@ -54,11 +61,15 @@ export function ProcesoTabs({ obra, tabActivo, onTabChange }: ProcesoTabsProps) 
         </div>
       </CardHeader>
       <CardContent className="pt-6">
-        {tabActivo === "resumen" && <ResumenTab obra={obra} />}
-        {tabActivo === "procesos" && <ProcesosTab obra={obra} />}
-        {tabActivo === "archivos" && <ArchivosTab obraId={obra.id} />}
-        {tabActivo === "bitacora" && <BitacoraTab obraId={obra.id} />}
-        {tabActivo === "reportes" && <ReportesTab obra={obra} />}
+        <div role="tabpanel" id={`tabpanel-${tabActivo}`} aria-labelledby={`tab-${tabActivo}`}>
+          <Suspense fallback={<Skeleton className="h-64 w-full" />}>
+            {tabActivo === "resumen" && <ResumenTab obra={obra} />}
+            {tabActivo === "procesos" && <ProcesosTab obra={obra} />}
+            {tabActivo === "archivos" && <ArchivosTab obraId={obra.id} />}
+            {tabActivo === "bitacora" && <BitacoraTab obraId={obra.id} />}
+            {tabActivo === "reportes" && <ReportesTab obra={obra} />}
+          </Suspense>
+        </div>
       </CardContent>
     </Card>
   )

@@ -7,6 +7,9 @@ import { FileUpload } from "@/components/ui/file-upload"
 import { ArchivoItem } from "@/components/archivos/archivo-item"
 import { showToast } from "@/components/ui/toast"
 import { confirmDialog } from "@/components/ui/confirm-dialog"
+import { EmptyState } from "@/components/ui/empty-state"
+import { FileText } from "lucide-react"
+import { ObraListSkeleton } from "@/components/ui/skeleton"
 
 interface ArchivosTabProps {
   obraId: string
@@ -80,7 +83,7 @@ export function ArchivosTab({ obraId }: ArchivosTabProps) {
   }
 
   if (isLoading) {
-    return <div className="text-center py-8">Cargando archivos...</div>
+    return <ObraListSkeleton />
   }
 
   return (
@@ -113,9 +116,11 @@ export function ArchivosTab({ obraId }: ArchivosTabProps) {
           ))}
         </div>
       ) : (
-        <div className="text-center py-8 text-muted-foreground">
-          No hay archivos subidos aún
-        </div>
+        <EmptyState
+          icon={FileText}
+          title="No hay archivos"
+          description="Aún no se han subido archivos para esta obra. Haz clic en 'Subir Archivo' para comenzar."
+        />
       )}
     </div>
   )

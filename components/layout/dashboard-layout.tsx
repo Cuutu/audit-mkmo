@@ -15,6 +15,7 @@ import {
   X,
   Trash2
 } from "lucide-react"
+import { ThemeToggle } from "@/components/ui/theme-toggle"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { useState } from "react"
@@ -71,8 +72,9 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             </Button>
             <div className="flex-1 min-w-0" />
             <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
+              <ThemeToggle />
               <Link href="/dashboard/perfil">
-                <Button variant="ghost" size="sm" className="gap-1 sm:gap-2 text-xs sm:text-sm">
+                <Button variant="ghost" size="sm" className="gap-1 sm:gap-2 text-xs sm:text-sm" aria-label="Perfil">
                   <User className="h-4 w-4 flex-shrink-0" />
                   <span className="hidden sm:inline truncate max-w-[120px]">{session?.user?.name}</span>
                   <span className="sm:hidden">{session?.user?.name?.split(' ')[0]}</span>
@@ -83,6 +85,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                 size="sm"
                 onClick={() => signOut({ callbackUrl: "/login" })}
                 className="gap-1 sm:gap-2 text-xs sm:text-sm"
+                aria-label="Cerrar sesión"
               >
                 <LogOut className="h-4 w-4 flex-shrink-0" />
                 <span className="hidden sm:inline">Salir</span>

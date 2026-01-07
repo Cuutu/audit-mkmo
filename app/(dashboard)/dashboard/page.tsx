@@ -31,38 +31,44 @@ export default async function DashboardPage() {
     },
   })
 
-  // Obtener estadísticas para gráficos
-  const todasLasObras = await prisma.obra.findMany({
-    where: { deleted: false },
-    select: { mes: true, ano: true, estado: true, avance: true },
-  })
+  // Obtener estadísticas optimizadas usando agregaciones
+  const [obrasPorMesData, obrasPorEstadoData, avanceData] = await Promise.all([
+    // Obras por mes (últimos 6 meses) - usando agregación
+    prisma.obra.groupBy({
+      by: ["mes", "ano"],
+      where: { deleted: false },
+      _count: true,
+      orderBy: [{ ano: "desc" }, { mes: "desc" }],
+      take: 6,
+    }),
+    // Obras por estado - usando agregación
+    prisma.obra.groupBy({
+      by: ["estado"],
+      where: { deleted: false },
+      _count: true,
+    }),
+    // Avance promedio - usando agregación
+    prisma.obra.aggregate({
+      where: { deleted: false },
+      _avg: { avance: true },
+    }),
+  ])
 
-  // Obras por mes (últimos 6 meses)
+  // Formatear datos para gráficos
   const meses = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"]
-  const obrasPorMes: Record<string, number> = {}
-  todasLasObras.forEach((obra) => {
-    const key = `${meses[obra.mes - 1]} ${obra.ano}`
-    obrasPorMes[key] = (obrasPorMes[key] || 0) + 1
-  })
-  const obrasPorMesArray = Object.entries(obrasPorMes)
-    .slice(-6)
-    .map(([mes, cantidad]) => ({ mes, cantidad }))
+  const obrasPorMesArray = obrasPorMesData
+    .reverse() // Ordenar cronológicamente
+    .map((item) => ({
+      mes: `${meses[item.mes - 1]} ${item.ano}`,
+      cantidad: item._count,
+    }))
 
-  // Obras por estado
-  const obrasPorEstado: Record<string, number> = {}
-  todasLasObras.forEach((obra) => {
-    obrasPorEstado[obra.estado] = (obrasPorEstado[obra.estado] || 0) + 1
-  })
-  const obrasPorEstadoArray = Object.entries(obrasPorEstado).map(([estado, cantidad]) => ({
-    estado,
-    cantidad,
+  const obrasPorEstadoArray = obrasPorEstadoData.map((item) => ({
+    estado: item.estado,
+    cantidad: item._count,
   }))
 
-  // Avance promedio
-  const avancePromedio =
-    todasLasObras.length > 0
-      ? Math.round(todasLasObras.reduce((acc, obra) => acc + obra.avance, 0) / todasLasObras.length)
-      : 0
+  const avancePromedio = Math.round(avanceData._avg.avance || 0)
 
   // Etapas atrasadas (procesos en EN_CURSO por más de 30 días sin actualizar)
   const fechaLimite = new Date()

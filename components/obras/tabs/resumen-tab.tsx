@@ -1,5 +1,6 @@
 "use client"
 
+import { memo } from "react"
 import { Obra, Proceso, User } from "@prisma/client"
 import { formatDate } from "@/lib/utils"
 
@@ -17,7 +18,7 @@ interface ResumenTabProps {
   obra: ObraWithRelations
 }
 
-export function ResumenTab({ obra }: ResumenTabProps) {
+export const ResumenTab = memo(function ResumenTab({ obra }: ResumenTabProps) {
   const procesosCompletados = obra.procesos.filter(
     (p) => p.estado === "APROBADO"
   ).length
@@ -87,5 +88,5 @@ export function ResumenTab({ obra }: ResumenTabProps) {
       )}
     </div>
   )
-}
+})
 
