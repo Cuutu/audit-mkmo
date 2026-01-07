@@ -101,20 +101,22 @@ export function PapeleraClient({ archivos, obras, userRole }: PapeleraClientProp
     setRestaurandoObra(obraId)
     try {
       const res = await fetch(`/api/obras/${obraId}`, {
-        method: "PATCH",
+        method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "restore" }),
       })
 
       if (!res.ok) {
-        const error = await res.json()
-        alert(error.error || "Error al restaurar obra")
+        const errorData = await res.json().catch(() => ({ error: "Error desconocido" }))
+        alert(errorData.error || "Error al restaurar obra")
         return
       }
 
+      const result = await res.json()
       router.refresh()
     } catch (error) {
-      alert("Error al restaurar obra")
+      console.error("Error al restaurar obra:", error)
+      alert("Error al restaurar obra. Por favor, intente nuevamente.")
     } finally {
       setRestaurandoObra(null)
     }

@@ -50,16 +50,34 @@ export async function PUT(
       return NextResponse.json({ error: "No autorizado" }, { status: 401 })
     }
 
-    const body = await request.json()
+    const body = await request.json().catch(() => ({}))
     
     // Manejar acción de restaurar
-    if (body.action === "restore") {
+    if (body?.action === "restore") {
       const obra = await prisma.obra.findUnique({
         where: { id: params.id, deleted: true },
       })
 
       if (!obra) {
         return NextResponse.json({ error: "Obra no encontrada en la papelera" }, { status: 404 })
+      }
+
+      // Verificar que no exista otra obra activa con el mismo número/año/mes
+      const obraExistente = await prisma.obra.findFirst({
+        where: {
+          numero: obra.numero,
+          ano: obra.ano,
+          mes: obra.mes,
+          deleted: false,
+          id: { not: obra.id },
+        },
+      })
+
+      if (obraExistente) {
+        return NextResponse.json(
+          { error: "Ya existe una obra activa con el mismo número, año y mes. No se puede restaurar." },
+          { status: 400 }
+        )
       }
 
       // Restaurar obra
