@@ -1,6 +1,6 @@
 "use client"
 
-import { useTheme } from "@/components/ui/theme-provider"
+import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from "recharts"
 import { Building2, Clock, TrendingUp, CheckCircle2, AlertTriangle } from "lucide-react"
@@ -21,8 +21,28 @@ export function DashboardStats({
   avancePromedio,
   etapasAtrasadas,
 }: DashboardStatsProps) {
-  const { theme } = useTheme()
-  const isDark = theme === "dark"
+  const [isDark, setIsDark] = useState(false)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+    // Detectar tema del DOM directamente
+    const checkTheme = () => {
+      setIsDark(document.documentElement.classList.contains("dark"))
+    }
+    
+    checkTheme()
+    
+    // Observar cambios en el tema
+    const observer = new MutationObserver(checkTheme)
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    })
+    
+    return () => observer.disconnect()
+  }, [])
+
   const COLORS = isDark ? COLORS_DARK : COLORS_LIGHT
   
   const estadoLabels: Record<string, string> = {
@@ -36,8 +56,12 @@ export function DashboardStats({
     estado: estadoLabels[item.estado] || item.estado,
   }))
 
-  const chartTextColor = isDark ? "#cbd5e1" : "#1e293b"
-  const gridColor = isDark ? "#475569" : "#e2e8f0"
+  // Usar valores por defecto seguros durante SSR
+  const chartTextColor = mounted ? (isDark ? "#cbd5e1" : "#1e293b") : "#1e293b"
+  const gridColor = mounted ? (isDark ? "#475569" : "#e2e8f0") : "#e2e8f0"
+  const tooltipBg = mounted ? (isDark ? "hsl(222.2 47% 10%)" : "#fff") : "#fff"
+  const tooltipBorder = mounted ? (isDark ? "hsl(217.2 32.6% 20%)" : "#e2e8f0") : "#e2e8f0"
+  const tooltipShadow = mounted ? (isDark ? "0 4px 16px rgba(0, 0, 0, 0.4)" : "0 2px 8px rgba(0, 0, 0, 0.1)") : "0 2px 8px rgba(0, 0, 0, 0.1)"
 
   return (
     <div className="space-y-6">
@@ -55,11 +79,11 @@ export function DashboardStats({
               <YAxis stroke={chartTextColor} />
               <Tooltip 
                 contentStyle={{
-                  backgroundColor: isDark ? "hsl(222.2 47% 10%)" : "#fff",
-                  border: `1px solid ${isDark ? "hsl(217.2 32.6% 20%)" : "#e2e8f0"}`,
+                  backgroundColor: tooltipBg,
+                  border: `1px solid ${tooltipBorder}`,
                   borderRadius: "0.5rem",
                   color: chartTextColor,
-                  boxShadow: isDark ? "0 4px 16px rgba(0, 0, 0, 0.4)" : "0 2px 8px rgba(0, 0, 0, 0.1)",
+                  boxShadow: tooltipShadow,
                 }}
                 labelStyle={{ color: chartTextColor }}
               />
@@ -96,11 +120,11 @@ export function DashboardStats({
                 </Pie>
                 <Tooltip 
                   contentStyle={{
-                    backgroundColor: isDark ? "hsl(222.2 47% 10%)" : "#fff",
-                    border: `1px solid ${isDark ? "hsl(217.2 32.6% 20%)" : "#e2e8f0"}`,
+                    backgroundColor: tooltipBg,
+                    border: `1px solid ${tooltipBorder}`,
                     borderRadius: "0.5rem",
                     color: chartTextColor,
-                    boxShadow: isDark ? "0 4px 16px rgba(0, 0, 0, 0.4)" : "0 2px 8px rgba(0, 0, 0, 0.1)",
+                    boxShadow: tooltipShadow,
                   }}
                   labelStyle={{ color: chartTextColor }}
                 />
@@ -126,7 +150,7 @@ export function DashboardStats({
                     stroke="currentColor"
                     strokeWidth="16"
                     fill="transparent"
-                    className={isDark ? "text-slate-600" : "text-gray-200"}
+                    className={mounted && isDark ? "text-slate-600" : "text-gray-200"}
                   />
                   <circle
                     cx="96"
@@ -136,7 +160,7 @@ export function DashboardStats({
                     strokeWidth="16"
                     fill="transparent"
                     strokeDasharray={`${(avancePromedio / 100) * 502.4} 502.4`}
-                    className={isDark ? "text-blue-500" : "text-blue-600"}
+                    className={mounted && isDark ? "text-blue-500" : "text-blue-600"}
                   />
                 </svg>
                 <div className="absolute inset-0 flex items-center justify-center">
