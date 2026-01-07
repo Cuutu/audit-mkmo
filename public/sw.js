@@ -33,18 +33,30 @@ self.addEventListener('activate', (event) => {
   )
 })
 
-// Estrategia: Network First, fallback a Cache
+// Estrategia: Network First, fallback a Cache (excluyendo APIs)
 self.addEventListener('fetch', (event) => {
+  const url = new URL(event.request.url)
+
+  // No cachear rutas de API (especialmente autenticación)
+  if (url.pathname.startsWith('/api/')) {
+    return
+  }
+
   event.respondWith(
     fetch(event.request)
       .then((response) => {
+        // Solo cachear respuestas exitosas
+        if (!response.ok) {
+          return response
+        }
+
         // Clonar la respuesta
         const responseToCache = response.clone()
-        
+
         caches.open(CACHE_NAME).then((cache) => {
           cache.put(event.request, responseToCache)
         })
-        
+
         return response
       })
       .catch(() => {
