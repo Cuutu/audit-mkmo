@@ -66,19 +66,21 @@ export function ProcesoStepper({ procesos, obraId }: ProcesoStepperProps) {
           <Link
             key={proceso.id}
             href={`/dashboard/obras/${obraId}/procesos/${proceso.numero}`}
-            className="block"
+            className="block group"
           >
             <div
               className={cn(
-                "p-4 border rounded-lg hover:shadow-md transition-all cursor-pointer",
-                proceso.estado !== "NO_INICIADO" && "border-primary"
+                "p-5 border rounded-xl hover:shadow-medium transition-all duration-200 cursor-pointer bg-white",
+                proceso.estado !== "NO_INICIADO" 
+                  ? "border-primary/30 bg-primary/5 hover:border-primary/50" 
+                  : "border-border/50 hover:border-border hover:bg-accent/30"
               )}
             >
-              <div className="flex items-start justify-between mb-2">
-                <div className="flex items-center gap-2">
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex items-center gap-2.5">
                   <div
                     className={cn(
-                      "w-3 h-3 rounded-full",
+                      "w-2.5 h-2.5 rounded-full shadow-sm",
                       getResponsableColor(proceso.responsable)
                     )}
                     title={
@@ -89,23 +91,25 @@ export function ProcesoStepper({ procesos, obraId }: ProcesoStepperProps) {
                         : "Ambos"
                     }
                   />
-                  <span className="text-sm font-medium text-muted-foreground">
+                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                     Proceso {proceso.numero}
                   </span>
                 </div>
-                {getEstadoIcon(proceso.estado)}
+                <div className="opacity-70 group-hover:opacity-100 transition-opacity">
+                  {getEstadoIcon(proceso.estado)}
+                </div>
               </div>
-              <h3 className="font-semibold text-sm mb-2 line-clamp-2">
+              <h3 className="font-semibold text-sm mb-3 line-clamp-2 leading-snug group-hover:text-primary transition-colors">
                 {proceso.nombre}
               </h3>
-              <div className="flex items-center justify-between text-xs text-muted-foreground">
+              <div className="flex items-center justify-between text-xs text-muted-foreground mb-2">
                 <span>{getEstadoLabel(proceso.estado)}</span>
-                <span>{proceso.avance}%</span>
+                <span className="font-semibold">{proceso.avance}%</span>
               </div>
               {proceso.avance > 0 && (
-                <div className="mt-2 w-full bg-gray-200 rounded-full h-1.5">
+                <div className="mt-3 w-full bg-gray-100 rounded-full h-2 overflow-hidden">
                   <div
-                    className="bg-primary h-1.5 rounded-full transition-all"
+                    className="bg-gradient-to-r from-primary to-primary/80 h-2 rounded-full transition-all duration-500"
                     style={{ width: `${proceso.avance}%` }}
                   />
                 </div>

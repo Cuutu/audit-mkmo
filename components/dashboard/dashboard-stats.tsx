@@ -33,10 +33,10 @@ export function DashboardStats({
   return (
     <div className="space-y-6">
       {/* Gráfico de Obras por Mes */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Obras por Mes</CardTitle>
-          <CardDescription>Distribución de obras creadas por mes</CardDescription>
+      <Card className="border-0 shadow-soft">
+        <CardHeader className="pb-4">
+          <CardTitle className="text-lg">Obras por Mes</CardTitle>
+          <CardDescription className="text-sm">Distribución de obras creadas por mes</CardDescription>
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={300}>
@@ -54,10 +54,10 @@ export function DashboardStats({
 
       {/* Gráfico de Obras por Estado */}
       <div className="grid gap-4 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Obras por Estado</CardTitle>
-            <CardDescription>Distribución porcentual</CardDescription>
+        <Card className="border-0 shadow-soft">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg">Obras por Estado</CardTitle>
+            <CardDescription className="text-sm">Distribución porcentual</CardDescription>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>

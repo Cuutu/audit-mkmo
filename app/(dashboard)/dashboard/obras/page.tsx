@@ -93,14 +93,14 @@ export default function ObrasPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold">Obras</h1>
+        <div className="space-y-1">
+          <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight">Obras</h1>
           <p className="text-sm sm:text-base text-muted-foreground">Gestión y búsqueda de obras</p>
         </div>
         <Link href="/dashboard/obras/nueva" className="w-full sm:w-auto">
-          <Button className="w-full sm:w-auto">
+          <Button className="w-full sm:w-auto shadow-sm hover:shadow-md">
             <Plus className="mr-2 h-4 w-4" />
             Nueva Obra
           </Button>
@@ -108,9 +108,9 @@ export default function ObrasPage() {
       </div>
 
       {/* Filtros */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Búsqueda y Filtros</CardTitle>
+      <Card className="border-0 shadow-soft">
+        <CardHeader className="pb-4">
+          <CardTitle className="text-lg">Búsqueda y Filtros</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-6">
@@ -121,14 +121,14 @@ export default function ObrasPage() {
                   placeholder="Buscar por número o nombre..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
+                  className="pl-10 h-11"
                 />
               </div>
             </div>
             <select
               value={filtroAño}
               onChange={(e) => setFiltroAño(e.target.value)}
-              className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
+              className="h-11 rounded-lg border border-input/50 bg-background px-4 py-2 text-sm transition-all hover:border-input focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1"
             >
               <option value="">Todos los años</option>
               {años.map((año) => (
@@ -140,7 +140,7 @@ export default function ObrasPage() {
             <select
               value={filtroMes}
               onChange={(e) => setFiltroMes(e.target.value)}
-              className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
+              className="h-11 rounded-lg border border-input/50 bg-background px-4 py-2 text-sm transition-all hover:border-input focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1"
             >
               <option value="">Todos los meses</option>
               {meses.map((mes) => (
@@ -152,7 +152,7 @@ export default function ObrasPage() {
             <select
               value={filtroEstado}
               onChange={(e) => setFiltroEstado(e.target.value)}
-              className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
+              className="h-11 rounded-lg border border-input/50 bg-background px-4 py-2 text-sm transition-all hover:border-input focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1"
             >
               <option value="">Todos los estados</option>
               <option value="NO_INICIADA">No Iniciada</option>
@@ -162,7 +162,7 @@ export default function ObrasPage() {
             <select
               value={filtroResponsable}
               onChange={(e) => setFiltroResponsable(e.target.value)}
-              className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
+              className="h-11 rounded-lg border border-input/50 bg-background px-4 py-2 text-sm transition-all hover:border-input focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1"
             >
               <option value="">Todos los responsables</option>
               <option value="ENGINEER">Ingeniero</option>
@@ -174,33 +174,35 @@ export default function ObrasPage() {
       </Card>
 
       {/* Listado */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Listado de Obras</CardTitle>
+      <Card className="border-0 shadow-soft">
+        <CardHeader className="pb-4">
+          <CardTitle className="text-lg">Listado de Obras</CardTitle>
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="text-center py-8">
-              <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2" />
+            <div className="text-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin mx-auto mb-3 text-primary" />
               <p className="text-muted-foreground">Cargando obras...</p>
             </div>
           ) : obras && obras.length > 0 ? (
-            <div className="space-y-4">
+            <div className="space-y-3">
               {obras.map((obra) => (
                 <Link
                   key={obra.id}
                   href={`/dashboard/obras/${obra.id}`}
-                  className="block p-4 border rounded-lg hover:bg-gray-50 transition-colors"
+                  className="block p-5 border border-border/50 rounded-xl hover:bg-accent/50 hover:border-border hover:shadow-soft transition-all duration-200 group"
                 >
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start gap-3">
-                        <Building2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                        <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors">
+                          <Building2 className="h-5 w-5 text-primary" />
+                        </div>
                         <div className="min-w-0 flex-1">
-                          <div className="font-semibold truncate">
+                          <div className="font-semibold truncate group-hover:text-primary transition-colors">
                             {obra.numero} - {obra.nombre}
                           </div>
-                          <div className="text-sm text-muted-foreground">
+                          <div className="text-sm text-muted-foreground mt-0.5">
                             {obra.mes}/{obra.ano}
                           </div>
                         </div>
@@ -208,11 +210,11 @@ export default function ObrasPage() {
                     </div>
                     <div className="flex items-center gap-3 sm:gap-4 flex-shrink-0">
                       <div className="text-right">
-                        <div className="text-sm font-medium">{obra.avance}%</div>
+                        <div className="text-base font-semibold">{obra.avance}%</div>
                         <div className="text-xs text-muted-foreground">Avance</div>
                       </div>
                       <span
-                        className={`px-2 py-1 rounded text-xs font-medium whitespace-nowrap ${getEstadoColor(obra.estado)}`}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap ${getEstadoColor(obra.estado)}`}
                       >
                         {obra.estado.replace("_", " ")}
                       </span>
@@ -223,7 +225,7 @@ export default function ObrasPage() {
                           return (
                             <div
                               key={i}
-                              className={`w-3 h-3 rounded-full ${proceso ? getProcesoColor(proceso.responsable) : "bg-gray-200"}`}
+                              className={`w-3 h-3 rounded-full transition-all ${proceso ? getProcesoColor(proceso.responsable) : "bg-gray-200"}`}
                               title={`Proceso ${i + 1}`}
                             />
                           )

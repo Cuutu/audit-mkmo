@@ -35,17 +35,17 @@ const tabs = [
 
 export function ProcesoTabs({ obra, tabActivo, onTabChange }: ProcesoTabsProps) {
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex border-b">
+    <Card className="border-0 shadow-soft">
+      <CardHeader className="pb-0">
+        <div className="flex gap-1 border-b border-border/50">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => onTabChange(tab.id)}
-              className={`px-4 py-2 font-medium text-sm border-b-2 transition-colors ${
+              className={`px-4 py-3 font-medium text-sm border-b-2 transition-all duration-200 relative ${
                 tabActivo === tab.id
                   ? "border-primary text-primary"
-                  : "border-transparent text-muted-foreground hover:text-foreground"
+                  : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"
               }`}
             >
               {tab.label}
@@ -53,7 +53,7 @@ export function ProcesoTabs({ obra, tabActivo, onTabChange }: ProcesoTabsProps) 
           ))}
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="pt-6">
         {tabActivo === "resumen" && <ResumenTab obra={obra} />}
         {tabActivo === "procesos" && <ProcesosTab obra={obra} />}
         {tabActivo === "archivos" && <ArchivosTab obraId={obra.id} />}

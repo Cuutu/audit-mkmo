@@ -35,14 +35,14 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const isAdmin = session?.user?.role === "ADMIN"
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30">
       {/* Sidebar móvil */}
       <div className={cn(
-        "fixed inset-0 z-40 lg:hidden",
-        sidebarOpen ? "block" : "hidden"
+        "fixed inset-0 z-40 lg:hidden transition-opacity duration-300",
+        sidebarOpen ? "opacity-100 visible" : "opacity-0 invisible"
       )}>
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={() => setSidebarOpen(false)} />
-        <div className="fixed inset-y-0 left-0 flex w-64 flex-col bg-white">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />
+        <div className="fixed inset-y-0 left-0 flex w-64 flex-col bg-white/95 backdrop-blur-xl border-r border-border/50 shadow-large">
           <SidebarContent 
             pathname={pathname} 
             isAdmin={isAdmin}
@@ -52,14 +52,14 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
       </div>
 
       {/* Sidebar desktop */}
-      <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col">
+      <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-72 lg:flex-col">
         <SidebarContent pathname={pathname} isAdmin={isAdmin} />
       </div>
 
       {/* Contenido principal */}
-      <div className="lg:pl-64">
+      <div className="lg:pl-72">
         {/* Header */}
-        <header className="sticky top-0 z-10 bg-white border-b border-gray-200">
+        <header className="sticky top-0 z-10 bg-white/80 backdrop-blur-xl border-b border-border/50 shadow-soft">
           <div className="flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8 gap-2">
             <Button
               variant="ghost"
@@ -110,11 +110,16 @@ function SidebarContent({
   onClose?: () => void
 }) {
   return (
-    <div className="flex flex-col h-full">
-      <div className="flex h-16 items-center border-b border-gray-200 px-6">
-        <h1 className="text-xl font-bold text-primary">Auditoría Obras</h1>
+    <div className="flex flex-col h-full bg-white/95 backdrop-blur-xl">
+      <div className="flex h-16 items-center border-b border-border/50 px-6">
+        <div className="flex items-center gap-3">
+          <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+            <Building2 className="h-5 w-5 text-primary" />
+          </div>
+          <h1 className="text-lg font-semibold tracking-tight">Auditoría Obras</h1>
+        </div>
       </div>
-      <nav className="flex-1 space-y-1 px-3 py-4">
+      <nav className="flex-1 space-y-1 px-3 py-6">
         {navigation
           .filter(item => !item.adminOnly || isAdmin)
           .map((item) => {
@@ -126,13 +131,13 @@ function SidebarContent({
                 href={item.href}
                 onClick={onClose}
                 className={cn(
-                  "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                  "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
                   isActive
-                    ? "bg-primary text-primary-foreground"
-                    : "text-gray-700 hover:bg-gray-100"
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
                 )}
               >
-                <Icon className="h-5 w-5" />
+                <Icon className="h-4 w-4" />
                 {item.name}
               </Link>
             )
