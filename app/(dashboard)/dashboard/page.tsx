@@ -97,10 +97,10 @@ export default async function DashboardPage() {
 
       {/* KPIs */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
-        <Card className="border-0 shadow-soft bg-gradient-to-br from-white to-slate-50/50">
+        <Card className="border-0 shadow-soft bg-gradient-to-br from-card to-card/80 dark:from-card dark:to-card/60">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
             <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Total Obras</CardTitle>
-            <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+            <div className="h-8 w-8 rounded-lg bg-primary/10 dark:bg-primary/20 flex items-center justify-center">
               <Building2 className="h-4 w-4 text-primary" />
             </div>
           </CardHeader>
@@ -108,48 +108,48 @@ export default async function DashboardPage() {
             <div className="text-3xl font-bold tracking-tight">{obrasCount}</div>
           </CardContent>
         </Card>
-        <Card className="border-0 shadow-soft bg-gradient-to-br from-white to-amber-50/30">
+        <Card className="border-0 shadow-soft bg-gradient-to-br from-card to-amber-50/30 dark:to-amber-950/20">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
             <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wide">En Auditoría</CardTitle>
-            <div className="h-8 w-8 rounded-lg bg-amber-100 flex items-center justify-center">
-              <Clock className="h-4 w-4 text-amber-600" />
+            <div className="h-8 w-8 rounded-lg bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center">
+              <Clock className="h-4 w-4 text-amber-600 dark:text-amber-400" />
             </div>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold tracking-tight">{obrasEnAuditoria}</div>
           </CardContent>
         </Card>
-        <Card className="border-0 shadow-soft bg-gradient-to-br from-white to-orange-50/30">
+        <Card className="border-0 shadow-soft bg-gradient-to-br from-card to-orange-50/30 dark:to-orange-950/20">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
             <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Pendientes</CardTitle>
-            <div className="h-8 w-8 rounded-lg bg-orange-100 flex items-center justify-center">
-              <TrendingUp className="h-4 w-4 text-orange-600" />
+            <div className="h-8 w-8 rounded-lg bg-orange-100 dark:bg-orange-900/40 flex items-center justify-center">
+              <TrendingUp className="h-4 w-4 text-orange-600 dark:text-orange-400" />
             </div>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold tracking-tight">{obrasPendientes}</div>
           </CardContent>
         </Card>
-        <Card className="border-0 shadow-soft bg-gradient-to-br from-white to-emerald-50/30">
+        <Card className="border-0 shadow-soft bg-gradient-to-br from-card to-emerald-50/30 dark:to-emerald-950/20">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
             <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Cerradas</CardTitle>
-            <div className="h-8 w-8 rounded-lg bg-emerald-100 flex items-center justify-center">
-              <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+            <div className="h-8 w-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center">
+              <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
             </div>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold tracking-tight">{obrasCerradas}</div>
           </CardContent>
         </Card>
-        <Card className={`border-0 shadow-soft ${procesosAtrasados > 0 ? "bg-gradient-to-br from-red-50 to-rose-50/50" : "bg-gradient-to-br from-white to-slate-50/50"}`}>
+        <Card className={`border-0 shadow-soft ${procesosAtrasados > 0 ? "bg-gradient-to-br from-red-50 to-rose-50/50 dark:from-red-950/30 dark:to-rose-950/20" : "bg-gradient-to-br from-card to-card/80 dark:from-card dark:to-card/60"}`}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
             <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Etapas Atrasadas</CardTitle>
-            <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${procesosAtrasados > 0 ? "bg-red-100" : "bg-muted"}`}>
-              <AlertTriangle className={`h-4 w-4 ${procesosAtrasados > 0 ? "text-red-600" : "text-muted-foreground"}`} />
+            <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${procesosAtrasados > 0 ? "bg-red-100 dark:bg-red-900/40" : "bg-muted"}`}>
+              <AlertTriangle className={`h-4 w-4 ${procesosAtrasados > 0 ? "text-red-600 dark:text-red-400" : "text-muted-foreground"}`} />
             </div>
           </CardHeader>
           <CardContent>
-            <div className={`text-3xl font-bold tracking-tight ${procesosAtrasados > 0 ? "text-red-600" : ""}`}>
+            <div className={`text-3xl font-bold tracking-tight ${procesosAtrasados > 0 ? "text-red-600 dark:text-red-400" : ""}`}>
               {procesosAtrasados}
             </div>
           </CardContent>
@@ -211,7 +211,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* Obras recientes */}
-      <Card>
+      <Card className="border-0 shadow-soft">
         <CardHeader>
           <CardTitle>Obras Recientes</CardTitle>
           <CardDescription>Últimas obras modificadas</CardDescription>
@@ -227,7 +227,7 @@ export default async function DashboardPage() {
                 <Link
                   key={obra.id}
                   href={`/dashboard/obras/${obra.id}`}
-                  className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 border border-border/50 rounded-xl hover:bg-accent/50 hover:border-border transition-all duration-200 group"
+                  className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 border border-border rounded-xl hover:bg-accent/50 hover:border-border/80 transition-all duration-200 group"
                 >
                   <div className="min-w-0 flex-1">
                     <div className="font-medium truncate group-hover:text-primary transition-colors">

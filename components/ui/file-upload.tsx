@@ -77,22 +77,22 @@ export function FileUpload({
           border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors
           ${
             isDragActive
-              ? "border-primary bg-primary/5"
-              : "border-gray-300 hover:border-gray-400"
+              ? "border-primary bg-primary/5 dark:bg-primary/10"
+              : "border-border hover:border-primary/50"
           }
           ${disabled || uploading ? "opacity-50 cursor-not-allowed" : ""}
         `}
       >
         <input {...getInputProps()} />
-        <Upload className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+        <Upload className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
         {isDragActive ? (
           <p className="text-primary font-medium">Suelta el archivo aquí...</p>
         ) : (
           <div>
-            <p className="text-sm text-gray-600 mb-2">
+            <p className="text-sm text-foreground mb-2">
               Arrastra un archivo aquí o haz clic para seleccionar
             </p>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-muted-foreground">
               PDF, Word, Excel, imágenes (máx. {formatFileSize(maxSize)})
             </p>
           </div>
@@ -100,12 +100,12 @@ export function FileUpload({
       </div>
 
       {selectedFile && (
-        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border">
+        <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border">
           <div className="flex items-center gap-3">
-            <File className="h-5 w-5 text-gray-500" />
+            <File className="h-5 w-5 text-muted-foreground" />
             <div>
               <p className="text-sm font-medium">{selectedFile.name}</p>
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-muted-foreground">
                 {formatFileSize(selectedFile.size)}
               </p>
             </div>
@@ -131,7 +131,7 @@ export function FileUpload({
       )}
 
       {error && (
-        <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">
+        <div className="p-3 text-sm text-destructive bg-destructive/10 dark:bg-destructive/20 border border-destructive/20 rounded-md">
           {error}
         </div>
       )}

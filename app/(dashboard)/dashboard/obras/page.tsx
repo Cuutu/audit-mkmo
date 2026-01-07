@@ -62,24 +62,24 @@ export default function ObrasPage() {
   const getEstadoColor = useMemo(() => (estado: string) => {
     switch (estado) {
       case "FINALIZADA":
-        return "bg-green-100 text-green-800"
+        return "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-300"
       case "EN_PROCESO":
-        return "bg-yellow-100 text-yellow-800"
+        return "bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300"
       default:
-        return "bg-gray-100 text-gray-800"
+        return "bg-muted text-muted-foreground"
     }
   }, [])
 
   const getProcesoColor = useMemo(() => (responsable: string) => {
     switch (responsable) {
       case "ENGINEER":
-        return "bg-red-500"
+        return "bg-red-500 dark:bg-red-600"
       case "ACCOUNTANT":
-        return "bg-gray-900"
+        return "bg-slate-900 dark:bg-slate-700"
       case "BOTH":
-        return "bg-blue-500"
+        return "bg-blue-500 dark:bg-blue-600"
       default:
-        return "bg-gray-300"
+        return "bg-muted"
     }
   }, [])
 
@@ -230,7 +230,7 @@ export default function ObrasPage() {
                           return (
                             <div
                               key={i}
-                              className={`w-3 h-3 rounded-full transition-all ${proceso ? getProcesoColor(proceso.responsable) : "bg-gray-200"}`}
+                              className={`w-3 h-3 rounded-full transition-all ${proceso ? getProcesoColor(proceso.responsable) : "bg-muted"}`}
                               title={`Proceso ${i + 1}: ${proceso ? proceso.responsable : "No iniciado"}`}
                               aria-label={`Proceso ${i + 1}`}
                             />

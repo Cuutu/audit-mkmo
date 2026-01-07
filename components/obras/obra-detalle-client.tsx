@@ -63,11 +63,11 @@ export function ObraDetalleClient({ obra }: ObraDetalleClientProps) {
   const getEstadoColor = (estado: ObraEstado) => {
     switch (estado) {
       case "FINALIZADA":
-        return "bg-green-100 text-green-800"
+        return "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-300"
       case "EN_PROCESO":
-        return "bg-yellow-100 text-yellow-800"
+        return "bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300"
       default:
-        return "bg-gray-100 text-gray-800"
+        return "bg-muted text-muted-foreground"
     }
   }
 

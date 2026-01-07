@@ -1,5 +1,6 @@
 "use client"
 
+import { useTheme } from "@/components/ui/theme-provider"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from "recharts"
 import { Building2, Clock, TrendingUp, CheckCircle2, AlertTriangle } from "lucide-react"
@@ -11,7 +12,8 @@ interface DashboardStatsProps {
   etapasAtrasadas: number
 }
 
-const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"]
+const COLORS_LIGHT = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"]
+const COLORS_DARK = ["#60a5fa", "#34d399", "#fbbf24", "#fb923c"]
 
 export function DashboardStats({
   obrasPorMes,
@@ -19,6 +21,10 @@ export function DashboardStats({
   avancePromedio,
   etapasAtrasadas,
 }: DashboardStatsProps) {
+  const { theme } = useTheme()
+  const isDark = theme === "dark"
+  const COLORS = isDark ? COLORS_DARK : COLORS_LIGHT
+  
   const estadoLabels: Record<string, string> = {
     NO_INICIADA: "No Iniciada",
     EN_PROCESO: "En Proceso",
@@ -29,6 +35,9 @@ export function DashboardStats({
     ...item,
     estado: estadoLabels[item.estado] || item.estado,
   }))
+
+  const chartTextColor = isDark ? "#cbd5e1" : "#1e293b"
+  const gridColor = isDark ? "#475569" : "#e2e8f0"
 
   return (
     <div className="space-y-6">
@@ -41,12 +50,21 @@ export function DashboardStats({
         <CardContent>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={obrasPorMes}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="mes" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Bar dataKey="cantidad" fill="#0088FE" name="Cantidad de Obras" />
+              <CartesianGrid strokeDasharray="3 3" stroke={gridColor} opacity={0.3} />
+              <XAxis dataKey="mes" stroke={chartTextColor} />
+              <YAxis stroke={chartTextColor} />
+              <Tooltip 
+                contentStyle={{
+                  backgroundColor: isDark ? "hsl(222.2 47% 10%)" : "#fff",
+                  border: `1px solid ${isDark ? "hsl(217.2 32.6% 20%)" : "#e2e8f0"}`,
+                  borderRadius: "0.5rem",
+                  color: chartTextColor,
+                  boxShadow: isDark ? "0 4px 16px rgba(0, 0, 0, 0.4)" : "0 2px 8px rgba(0, 0, 0, 0.1)",
+                }}
+                labelStyle={{ color: chartTextColor }}
+              />
+              <Legend wrapperStyle={{ color: chartTextColor }} />
+              <Bar dataKey="cantidad" fill={COLORS[0]} name="Cantidad de Obras" radius={[8, 8, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </CardContent>
@@ -76,14 +94,23 @@ export function DashboardStats({
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip />
+                <Tooltip 
+                  contentStyle={{
+                    backgroundColor: isDark ? "hsl(222.2 47% 10%)" : "#fff",
+                    border: `1px solid ${isDark ? "hsl(217.2 32.6% 20%)" : "#e2e8f0"}`,
+                    borderRadius: "0.5rem",
+                    color: chartTextColor,
+                    boxShadow: isDark ? "0 4px 16px rgba(0, 0, 0, 0.4)" : "0 2px 8px rgba(0, 0, 0, 0.1)",
+                  }}
+                  labelStyle={{ color: chartTextColor }}
+                />
               </PieChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
 
         {/* Avance Promedio */}
-        <Card>
+        <Card className="border-0 shadow-soft">
           <CardHeader>
             <CardTitle>Avance Promedio</CardTitle>
             <CardDescription>Progreso general de todas las obras</CardDescription>
@@ -99,7 +126,7 @@ export function DashboardStats({
                     stroke="currentColor"
                     strokeWidth="16"
                     fill="transparent"
-                    className="text-gray-200"
+                    className={isDark ? "text-slate-600" : "text-gray-200"}
                   />
                   <circle
                     cx="96"
@@ -109,7 +136,7 @@ export function DashboardStats({
                     strokeWidth="16"
                     fill="transparent"
                     strokeDasharray={`${(avancePromedio / 100) * 502.4} 502.4`}
-                    className="text-blue-600"
+                    className={isDark ? "text-blue-500" : "text-blue-600"}
                   />
                 </svg>
                 <div className="absolute inset-0 flex items-center justify-center">
@@ -126,13 +153,13 @@ export function DashboardStats({
 
       {/* Alertas de Etapas Atrasadas */}
       {etapasAtrasadas > 0 && (
-        <Card className="border-red-200 bg-red-50">
+        <Card className="border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-950/30">
           <CardHeader>
             <div className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-red-600" />
-              <CardTitle className="text-red-900">Etapas Atrasadas</CardTitle>
+              <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400" />
+              <CardTitle className="text-red-900 dark:text-red-100">Etapas Atrasadas</CardTitle>
             </div>
-            <CardDescription className="text-red-700">
+            <CardDescription className="text-red-700 dark:text-red-300">
               Hay {etapasAtrasadas} proceso{etapasAtrasadas !== 1 ? "s" : ""} que requieren atención
             </CardDescription>
           </CardHeader>

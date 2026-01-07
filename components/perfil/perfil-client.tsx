@@ -122,7 +122,7 @@ export function PerfilClient({ user, actividadLogs }: PerfilClientProps) {
               {actividadLogs.map((log) => (
                 <div
                   key={log.id}
-                  className="p-3 border rounded-lg hover:bg-gray-50 transition-colors"
+                  className="p-3 border rounded-lg hover:bg-accent/50 transition-colors"
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">

@@ -101,7 +101,7 @@ export function ChecklistEditor({ items: initialItems, onSave, disabled }: Check
       <CardContent className="space-y-4">
         {/* Barra de progreso */}
         {total > 0 && (
-          <div className="w-full bg-gray-200 rounded-full h-2">
+          <div className="w-full bg-muted rounded-full h-2">
             <div
               className="bg-primary h-2 rounded-full transition-all"
               style={{ width: `${porcentaje}%` }}
@@ -115,7 +115,7 @@ export function ChecklistEditor({ items: initialItems, onSave, disabled }: Check
             <div
               key={item.id}
               className={`flex items-center gap-3 p-3 border rounded-lg ${
-                item.completado ? "bg-green-50 border-green-200" : "bg-white"
+                item.completado ? "bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800" : "bg-card"
               }`}
             >
               <button
@@ -126,13 +126,13 @@ export function ChecklistEditor({ items: initialItems, onSave, disabled }: Check
                 {item.completado ? (
                   <CheckCircle2 className="h-5 w-5 text-green-600" />
                 ) : (
-                  <Circle className="h-5 w-5 text-gray-400" />
+                  <Circle className="h-5 w-5 text-muted-foreground" />
                 )}
               </button>
               <div className="flex-1">
                 <p
                   className={`text-sm ${
-                    item.completado ? "line-through text-gray-500" : "text-gray-900"
+                    item.completado ? "line-through text-muted-foreground" : "text-foreground"
                   }`}
                 >
                   {item.texto}
@@ -148,7 +148,7 @@ export function ChecklistEditor({ items: initialItems, onSave, disabled }: Check
                   className={`text-xs px-2 py-1 rounded ${
                     item.requerido
                       ? "bg-red-100 text-red-700"
-                      : "bg-gray-100 text-gray-600"
+                      : "bg-muted text-muted-foreground"
                   }`}
                 >
                   {item.requerido ? "Requerido" : "Opcional"}

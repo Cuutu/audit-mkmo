@@ -37,7 +37,7 @@ export function ProcesoHistorial({ procesoId }: ProcesoHistorialProps) {
       case "UPLOAD":
         return "bg-purple-100 text-purple-800"
       default:
-        return "bg-gray-100 text-gray-800"
+        return "bg-muted text-muted-foreground"
     }
   }
 
@@ -70,7 +70,7 @@ export function ProcesoHistorial({ procesoId }: ProcesoHistorialProps) {
             {logs.map((log: any) => (
               <div
                 key={log.id}
-                className="p-4 border rounded-lg hover:bg-gray-50 transition-colors"
+                className="p-4 border rounded-lg hover:bg-accent/50 transition-colors"
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">

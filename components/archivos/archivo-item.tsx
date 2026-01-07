@@ -34,13 +34,13 @@ export const ArchivoItem = memo(function ArchivoItem({ archivo, onDelete, obraId
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors"
+        className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors"
       >
         <div className="flex-1">
           <div className="flex items-center gap-2">
             <p className="font-medium">{archivo.nombreOriginal}</p>
             {archivo.version > 1 && (
-              <span className="px-2 py-0.5 bg-blue-100 text-blue-800 text-xs rounded">
+              <span className="px-2 py-0.5 bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-foreground text-xs rounded">
                 v{archivo.version}
               </span>
             )}
@@ -82,7 +82,7 @@ export const ArchivoItem = memo(function ArchivoItem({ archivo, onDelete, obraId
             variant="outline"
             size="sm"
             onClick={() => onDelete(archivo.id)}
-            className="text-red-600 hover:text-red-700"
+            className="text-destructive hover:text-destructive/80"
           >
             <Trash2 className="h-4 w-4" />
           </Button>

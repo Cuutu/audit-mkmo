@@ -251,7 +251,7 @@ export function ParametrosClient({ parametros: initialParametros }: ParametrosCl
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
                         <p className="font-medium">{parametro.clave}</p>
-                        <span className="px-2 py-0.5 bg-gray-100 text-gray-800 text-xs rounded">
+                        <span className="px-2 py-0.5 bg-muted text-muted-foreground text-xs rounded">
                           {parametro.tipo}
                         </span>
                       </div>

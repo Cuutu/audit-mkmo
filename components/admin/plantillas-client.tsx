@@ -247,7 +247,7 @@ export function PlantillasClient({ plantillas: initialPlantillas }: PlantillasCl
                               Activa
                             </span>
                           ) : (
-                            <span className="px-2 py-0.5 bg-gray-100 text-gray-800 text-xs rounded flex items-center gap-1">
+                            <span className="px-2 py-0.5 bg-muted text-muted-foreground text-xs rounded flex items-center gap-1">
                               <XCircle className="h-3 w-3" />
                               Inactiva
                             </span>

@@ -50,11 +50,11 @@ export function ProcesoDetalleClient({ obra, proceso }: ProcesoDetalleClientProp
       case "ENGINEER":
         return "bg-red-500 text-white"
       case "ACCOUNTANT":
-        return "bg-gray-900 text-white"
+        return "bg-slate-900 dark:bg-slate-700 text-white dark:text-slate-100"
       case "BOTH":
         return "bg-blue-500 text-white"
       default:
-        return "bg-gray-300"
+        return "bg-muted"
     }
   }
 
@@ -309,7 +309,7 @@ export function ProcesoDetalleClient({ obra, proceso }: ProcesoDetalleClientProp
         </CardHeader>
         <CardContent>
           {showUpload && (
-            <div className="mb-4 p-4 border rounded-lg bg-gray-50">
+            <div className="mb-4 p-4 border rounded-lg bg-muted/50">
               <FileUpload
                 onUpload={handleFileUpload}
                 obraId={obra.id}

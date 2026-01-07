@@ -27,11 +27,11 @@ export const ProcesoStepper = memo(function ProcesoStepper({ procesos, obraId }:
       case "ENGINEER":
         return "bg-red-500"
       case "ACCOUNTANT":
-        return "bg-gray-900"
+        return "bg-slate-900 dark:bg-slate-700"
       case "BOTH":
         return "bg-blue-500"
       default:
-        return "bg-gray-300"
+        return "bg-muted"
     }
   }
 
@@ -44,7 +44,7 @@ export const ProcesoStepper = memo(function ProcesoStepper({ procesos, obraId }:
       case "EN_CURSO":
         return <Clock className="h-5 w-5 text-blue-600" />
       default:
-        return <Circle className="h-5 w-5 text-gray-400" />
+                return <Circle className="h-5 w-5 text-muted-foreground" />
     }
   }
 
@@ -77,7 +77,7 @@ export const ProcesoStepper = memo(function ProcesoStepper({ procesos, obraId }:
             >
               <div
                 className={cn(
-                  "p-5 border rounded-xl hover:shadow-medium transition-all duration-200 cursor-pointer bg-white",
+                  "p-5 border rounded-xl hover:shadow-medium transition-all duration-200 cursor-pointer bg-card",
                   proceso.estado !== "NO_INICIADO" 
                     ? "border-primary/30 bg-primary/5 hover:border-primary/50" 
                     : "border-border/50 hover:border-border hover:bg-accent/30"
@@ -114,7 +114,7 @@ export const ProcesoStepper = memo(function ProcesoStepper({ procesos, obraId }:
                 <span className="font-semibold">{proceso.avance}%</span>
               </div>
               {proceso.avance > 0 && (
-                <div className="mt-3 w-full bg-gray-100 rounded-full h-2 overflow-hidden">
+                <div className="mt-3 w-full bg-muted rounded-full h-2 overflow-hidden">
                   <div
                     className="bg-gradient-to-r from-primary to-primary/80 h-2 rounded-full transition-all duration-500"
                     style={{ width: `${proceso.avance}%` }}

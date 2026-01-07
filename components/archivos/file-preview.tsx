@@ -48,7 +48,7 @@ export function FilePreview({ archivo, onClose }: FilePreviewProps) {
         </div>
         <CardContent className="flex-1 overflow-auto p-0">
           {isImage ? (
-            <div className="flex items-center justify-center min-h-[400px] bg-gray-100">
+            <div className="flex items-center justify-center min-h-[400px] bg-muted">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={previewUrl}
@@ -80,7 +80,7 @@ export function FilePreview({ archivo, onClose }: FilePreviewProps) {
             </div>
           )}
           {loading && (
-            <div className="absolute inset-0 flex items-center justify-center bg-white/80">
+            <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm">
               <p className="text-muted-foreground">Cargando...</p>
             </div>
           )}

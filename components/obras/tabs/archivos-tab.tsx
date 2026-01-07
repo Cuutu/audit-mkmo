@@ -96,7 +96,7 @@ export function ArchivosTab({ obraId }: ArchivosTabProps) {
       </div>
 
       {showUpload && (
-        <div className="p-4 border rounded-lg bg-gray-50">
+        <div className="p-4 border rounded-lg bg-muted/30">
           <FileUpload
             onUpload={handleUpload}
             obraId={obraId}

@@ -38,7 +38,7 @@ export function ObraListSkeleton() {
       {Array.from({ length: 5 }).map((_, i) => (
         <div
           key={i}
-          className="p-5 border border-border/50 rounded-xl bg-white"
+          className="p-5 border border-border/50 rounded-xl bg-card"
         >
           <div className="flex items-center gap-3">
             <Skeleton className="h-10 w-10 rounded-lg" />

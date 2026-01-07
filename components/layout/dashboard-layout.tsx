@@ -36,14 +36,14 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const isAdmin = session?.user?.role === "ADMIN"
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30 dark:from-slate-950 dark:via-slate-900 dark:to-blue-950/20">
       {/* Sidebar móvil */}
       <div className={cn(
         "fixed inset-0 z-40 lg:hidden transition-opacity duration-300",
         sidebarOpen ? "opacity-100 visible" : "opacity-0 invisible"
       )}>
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />
-        <div className="fixed inset-y-0 left-0 flex w-64 flex-col bg-white/95 backdrop-blur-xl border-r border-border/50 shadow-large">
+        <div className="fixed inset-y-0 left-0 flex w-64 flex-col bg-card/95 backdrop-blur-xl border-r border-border shadow-large">
           <SidebarContent 
             pathname={pathname} 
             isAdmin={isAdmin}
@@ -60,7 +60,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
       {/* Contenido principal */}
       <div className="lg:pl-72">
         {/* Header */}
-        <header className="sticky top-0 z-10 bg-white/80 backdrop-blur-xl border-b border-border/50 shadow-soft">
+        <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-xl border-b border-border shadow-soft">
           <div className="flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8 gap-2">
             <Button
               variant="ghost"
@@ -113,10 +113,10 @@ function SidebarContent({
   onClose?: () => void
 }) {
   return (
-    <div className="flex flex-col h-full bg-white/95 backdrop-blur-xl">
-      <div className="flex h-16 items-center border-b border-border/50 px-6">
+    <div className="flex flex-col h-full bg-card/95 backdrop-blur-xl border-r border-border">
+      <div className="flex h-16 items-center border-b border-border px-6">
         <div className="flex items-center gap-3">
-          <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+          <div className="h-8 w-8 rounded-lg bg-primary/10 dark:bg-primary/20 flex items-center justify-center">
             <Building2 className="h-5 w-5 text-primary" />
           </div>
           <h1 className="text-lg font-semibold tracking-tight">Auditoría Obras</h1>
