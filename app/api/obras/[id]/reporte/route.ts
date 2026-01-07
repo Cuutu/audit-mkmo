@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { createAuditLog } from "@/lib/audit"
 import { generarReporteCompleto, generarMatrizControl, generarDiagramaFlujo } from "@/lib/reportes/pdf-generator"
 import { generarExcelObra } from "@/lib/reportes/excel-generator"
 import * as XLSX from "xlsx"
@@ -39,6 +40,23 @@ export async function GET(
     if (!obra) {
       return NextResponse.json({ error: "Obra no encontrada" }, { status: 404 })
     }
+
+    // Registrar generación de reporte en logs
+    await createAuditLog({
+      accion: "READ",
+      entidad: "Reporte",
+      entidadId: obra.id,
+      userId: session.user.id,
+      obraId: obra.id,
+      campo: `reporte_${tipo}_${formato}`,
+      valorNuevo: JSON.stringify({
+        tipo,
+        formato,
+        obraNumero: obra.numero,
+        obraNombre: obra.nombre,
+        fechaGeneracion: new Date().toISOString(),
+      }),
+    })
 
     if (formato === "pdf") {
       let doc

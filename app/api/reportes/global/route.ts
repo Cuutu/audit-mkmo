@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { createAuditLog } from "@/lib/audit"
 import { generarExcelGlobal } from "@/lib/reportes/excel-generator"
 import * as XLSX from "xlsx"
 
@@ -59,6 +60,26 @@ export async function GET(request: NextRequest) {
         },
       },
       orderBy: [{ ano: "desc" }, { mes: "desc" }, { numero: "asc" }],
+    })
+
+    // Registrar generación de reporte global en logs
+    await createAuditLog({
+      accion: "READ",
+      entidad: "Reporte",
+      entidadId: "global",
+      userId: session.user.id,
+      campo: "reporte_global_excel",
+      valorNuevo: JSON.stringify({
+        tipo: "global",
+        formato: "excel",
+        filtros: {
+          ano: ano || "todos",
+          mes: mes || "todos",
+          estado: estado || "todos",
+        },
+        cantidadObras: obras.length,
+        fechaGeneracion: new Date().toISOString(),
+      }),
     })
 
     const workbook = generarExcelGlobal(obras)

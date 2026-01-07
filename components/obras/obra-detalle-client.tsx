@@ -1,11 +1,13 @@
 "use client"
 
 import { useState } from "react"
+import { useSession } from "next-auth/react"
+import { useRouter } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { ProcesoStepper } from "@/components/obras/proceso-stepper"
 import { ProcesoTabs } from "@/components/obras/proceso-tabs"
-import { ArrowLeft, Edit } from "lucide-react"
+import { ArrowLeft, Edit, Trash2 } from "lucide-react"
 import Link from "next/link"
 import { Obra, Proceso, User, ObraEstado } from "@prisma/client"
 
@@ -24,7 +26,39 @@ interface ObraDetalleClientProps {
 }
 
 export function ObraDetalleClient({ obra }: ObraDetalleClientProps) {
+  const { data: session } = useSession()
+  const router = useRouter()
   const [tabActivo, setTabActivo] = useState("resumen")
+  const [eliminando, setEliminando] = useState(false)
+
+  const isAdmin = session?.user?.role === "ADMIN"
+
+  const handleEliminar = async () => {
+    if (!confirm(`¿Está seguro de que desea eliminar la obra "${obra.numero} - ${obra.nombre}"?\n\nEsta acción moverá la obra a la papelera.`)) {
+      return
+    }
+
+    setEliminando(true)
+    try {
+      const res = await fetch(`/api/obras/${obra.id}`, {
+        method: "DELETE",
+      })
+
+      if (!res.ok) {
+        const error = await res.json()
+        alert(error.error || "Error al eliminar obra")
+        return
+      }
+
+      router.push("/dashboard/obras")
+      router.refresh()
+    } catch (error) {
+      console.error("Error al eliminar obra:", error)
+      alert("Error al eliminar obra")
+    } finally {
+      setEliminando(false)
+    }
+  }
 
   const getEstadoColor = (estado: ObraEstado) => {
     switch (estado) {
@@ -73,6 +107,18 @@ export function ObraDetalleClient({ obra }: ObraDetalleClientProps) {
               <span className="hidden sm:inline">Editar</span>
             </Button>
           </Link>
+          {isAdmin && (
+            <Button 
+              variant="destructive" 
+              size="sm" 
+              className="text-xs sm:text-sm"
+              onClick={handleEliminar}
+              disabled={eliminando}
+            >
+              <Trash2 className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="hidden sm:inline">{eliminando ? "Eliminando..." : "Eliminar"}</span>
+            </Button>
+          )}
         </div>
       </div>
 
