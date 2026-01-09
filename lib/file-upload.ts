@@ -1,43 +1,41 @@
-import { writeFile, mkdir } from "fs/promises"
-import { join } from "path"
-import { existsSync } from "fs"
+import { put, del } from "@vercel/blob"
 
-const UPLOAD_DIR = process.env.UPLOAD_DIR || "./uploads"
-const MAX_FILE_SIZE = parseInt(process.env.MAX_FILE_SIZE || "10485760") // 10MB por defecto
+const MAX_FILE_SIZE = parseInt(process.env.MAX_FILE_SIZE || "104857600") // 100MB por defecto
 
 export async function saveFile(
   file: File,
   obraId: string,
   procesoId?: string
-): Promise<{ ruta: string; nombre: string; tamano: number; tipo: string }> {
+): Promise<{ url: string; nombre: string; tamano: number; tipo: string }> {
   // Validar tamaño
   if (file.size > MAX_FILE_SIZE) {
-    throw new Error(`El archivo excede el tamaño máximo de ${MAX_FILE_SIZE} bytes`)
+    throw new Error(`El archivo excede el tamaño máximo de ${MAX_FILE_SIZE / 1024 / 1024}MB`)
   }
 
-  // Crear estructura de carpetas
-  const obraDir = join(UPLOAD_DIR, obraId)
-  const procesoDir = procesoId ? join(obraDir, `proceso-${procesoId}`) : obraDir
-
-  if (!existsSync(procesoDir)) {
-    await mkdir(procesoDir, { recursive: true })
-  }
-
-  // Generar nombre único
+  // Generar nombre único con estructura de carpetas
   const timestamp = Date.now()
-  const nombreArchivo = `${timestamp}-${file.name}`
-  const rutaCompleta = join(procesoDir, nombreArchivo)
+  const carpeta = procesoId ? `obras/${obraId}/proceso-${procesoId}` : `obras/${obraId}`
+  const nombreArchivo = `${carpeta}/${timestamp}-${file.name}`
 
-  // Guardar archivo
-  const bytes = await file.arrayBuffer()
-  const buffer = Buffer.from(bytes)
-  await writeFile(rutaCompleta, buffer)
+  // Subir a Vercel Blob
+  const blob = await put(nombreArchivo, file, {
+    access: "public",
+  })
 
   return {
-    ruta: rutaCompleta,
-    nombre: nombreArchivo,
+    url: blob.url,
+    nombre: `${timestamp}-${file.name}`,
     tamano: file.size,
     tipo: file.type,
+  }
+}
+
+export async function deleteFile(url: string): Promise<void> {
+  try {
+    await del(url)
+  } catch (error) {
+    console.error("Error al eliminar archivo de Vercel Blob:", error)
+    // No lanzamos error para que no falle el proceso de eliminación
   }
 }
 
@@ -59,4 +57,3 @@ export function isAllowedFileType(filename: string): boolean {
   const extension = getFileExtension(filename)
   return allowedTypes.includes(extension)
 }
-

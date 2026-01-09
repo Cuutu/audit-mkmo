@@ -2,9 +2,6 @@ import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
-import { readFile } from "fs/promises"
-import { existsSync } from "fs"
-import { join } from "path"
 
 export async function GET(
   request: NextRequest,
@@ -29,17 +26,6 @@ export async function GET(
       return NextResponse.json({ error: "Archivo no encontrado" }, { status: 404 })
     }
 
-    // Verificar que el archivo existe en el sistema de archivos
-    if (!existsSync(archivo.ruta)) {
-      return NextResponse.json(
-        { error: "El archivo no existe en el servidor" },
-        { status: 404 }
-      )
-    }
-
-    // Leer el archivo
-    const fileBuffer = await readFile(archivo.ruta)
-
     // Registrar descarga en audit log
     await prisma.auditLog.create({
       data: {
@@ -52,6 +38,18 @@ export async function GET(
         archivoId: archivo.id,
       },
     })
+
+    // Descargar el archivo desde Vercel Blob
+    const response = await fetch(archivo.ruta)
+    
+    if (!response.ok) {
+      return NextResponse.json(
+        { error: "El archivo no existe en el servidor" },
+        { status: 404 }
+      )
+    }
+
+    const fileBuffer = await response.arrayBuffer()
 
     // Retornar el archivo
     return new NextResponse(fileBuffer, {
@@ -69,4 +67,3 @@ export async function GET(
     )
   }
 }
-

@@ -3,8 +3,7 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { createAuditLog } from "@/lib/audit"
-import { unlink } from "fs/promises"
-import { existsSync } from "fs"
+import { deleteFile } from "@/lib/file-upload"
 
 export async function DELETE(
   request: NextRequest,
@@ -115,14 +114,8 @@ export async function PATCH(
         return NextResponse.json({ error: "Archivo no encontrado" }, { status: 404 })
       }
 
-      // Eliminar archivo físico si existe
-      if (existsSync(archivo.ruta)) {
-        try {
-          await unlink(archivo.ruta)
-        } catch (error) {
-          console.error("Error al eliminar archivo físico:", error)
-        }
-      }
+      // Eliminar archivo de Vercel Blob
+      await deleteFile(archivo.ruta)
 
       // Eliminar de la base de datos
       await prisma.archivo.delete({
@@ -152,4 +145,3 @@ export async function PATCH(
     )
   }
 }
-

@@ -69,7 +69,7 @@ export async function POST(
 
     const nuevaVersion = archivoExistente ? archivoExistente.version + 1 : 1
 
-    // Guardar archivo
+    // Guardar archivo en Vercel Blob
     const fileData = await saveFile(file, params.id, procesoId || undefined)
 
     // Crear registro en BD
@@ -79,7 +79,7 @@ export async function POST(
         nombreOriginal: file.name,
         tipo: fileData.tipo,
         tamano: fileData.tamano,
-        ruta: fileData.ruta,
+        ruta: fileData.url, // Ahora guardamos la URL del blob
         version: nuevaVersion,
         archivoAnteriorId: archivoExistente?.id || null,
         obraId: params.id,
@@ -109,4 +109,3 @@ export async function POST(
     )
   }
 }
-
