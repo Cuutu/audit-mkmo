@@ -5,6 +5,9 @@ import { prisma } from "@/lib/prisma"
 import { saveFile, isAllowedFileType } from "@/lib/file-upload"
 import { createAuditLog } from "@/lib/audit"
 
+// Configurar tiempo máximo para archivos grandes (300 segundos = 5 minutos)
+export const maxDuration = 300
+
 export async function POST(
   request: NextRequest,
   { params }: { params: { id: string } }

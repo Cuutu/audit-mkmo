@@ -1,6 +1,6 @@
 import { put, del } from "@vercel/blob"
 
-const MAX_FILE_SIZE = parseInt(process.env.MAX_FILE_SIZE || "104857600") // 100MB por defecto
+const MAX_FILE_SIZE = parseInt(process.env.MAX_FILE_SIZE || "524288000") // 500MB por defecto (máximo de Vercel Blob)
 
 export async function saveFile(
   file: File,
