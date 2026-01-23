@@ -25,7 +25,7 @@ export async function GET(
         },
         include: {
           user: {
-            select: { name: true, email: true },
+            select: { name: true, email: true, fotoPerfil: true },
           },
         },
         orderBy: {
@@ -43,9 +43,12 @@ export async function GET(
 
     return NextResponse.json({
       logs,
-      total,
-      page,
-      totalPages: Math.ceil(total / limit),
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
     })
   } catch (error) {
     console.error("Error al obtener bitácora:", error)
