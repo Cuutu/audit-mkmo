@@ -82,9 +82,9 @@ export function ProcesoDetalleClient({ obra, proceso }: ProcesoDetalleClientProp
       case "ENGINEER":
         return "bg-red-500 text-white"
       case "ACCOUNTANT":
-        return "bg-slate-900 dark:bg-slate-700 text-white dark:text-slate-100"
+        return "bg-green-500 text-white"
       case "BOTH":
-        return "bg-blue-500 text-white"
+        return "bg-yellow-500 text-white"
       default:
         return "bg-muted"
     }

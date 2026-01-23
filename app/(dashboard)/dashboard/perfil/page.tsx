@@ -16,16 +16,27 @@ export default async function PerfilPage() {
     where: { id: session.user.id },
   })
 
+  if (!user) {
+    redirect("/login")
+  }
+
+  // Crear objeto sin password para pasar al componente
+  const userWithoutPassword = {
+    id: user.id,
+    email: user.email,
+    name: user.name,
+    role: user.role,
+    fotoPerfil: user.fotoPerfil,
+    createdAt: user.createdAt,
+    updatedAt: user.updatedAt,
+  }
+
   const actividadLogs = await prisma.actividadLog.findMany({
     where: { userId: session.user.id },
     orderBy: { createdAt: "desc" },
     take: 20,
   })
 
-  if (!user) {
-    redirect("/login")
-  }
-
-  return <PerfilClient user={user} actividadLogs={actividadLogs} />
+  return <PerfilClient user={userWithoutPassword} actividadLogs={actividadLogs} />
 }
 

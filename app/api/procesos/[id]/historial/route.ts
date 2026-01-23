@@ -13,21 +13,43 @@ export async function GET(
       return NextResponse.json({ error: "No autorizado" }, { status: 401 })
     }
 
-    const logs = await prisma.auditLog.findMany({
-      where: {
-        procesoId: params.id,
-      },
-      include: {
-        user: {
-          select: { name: true, email: true },
+    const { searchParams } = new URL(request.url)
+    const page = parseInt(searchParams.get("page") || "1")
+    const limit = parseInt(searchParams.get("limit") || "10")
+    const skip = (page - 1) * limit
+
+    const [logs, total] = await Promise.all([
+      prisma.auditLog.findMany({
+        where: {
+          procesoId: params.id,
         },
-      },
-      orderBy: {
-        createdAt: "desc",
+        include: {
+          user: {
+            select: { name: true, email: true, fotoPerfil: true },
+          },
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+        skip,
+        take: limit,
+      }),
+      prisma.auditLog.count({
+        where: {
+          procesoId: params.id,
+        },
+      }),
+    ])
+
+    return NextResponse.json({
+      logs,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
       },
     })
-
-    return NextResponse.json(logs)
   } catch (error) {
     console.error("Error al obtener historial:", error)
     return NextResponse.json(

@@ -75,7 +75,15 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
               <ThemeToggle />
               <Link href="/dashboard/perfil">
                 <Button variant="ghost" size="sm" className="gap-1 sm:gap-2 text-xs sm:text-sm" aria-label="Perfil">
-                  <User className="h-4 w-4 flex-shrink-0" />
+                  {session?.user?.fotoPerfil ? (
+                    <img
+                      src={session.user.fotoPerfil}
+                      alt={session.user.name || "Usuario"}
+                      className="h-6 w-6 rounded-full object-cover flex-shrink-0"
+                    />
+                  ) : (
+                    <User className="h-4 w-4 flex-shrink-0" />
+                  )}
                   <span className="hidden sm:inline truncate max-w-[120px]">{session?.user?.name}</span>
                   <span className="sm:hidden">{session?.user?.name?.split(' ')[0]}</span>
                 </Button>

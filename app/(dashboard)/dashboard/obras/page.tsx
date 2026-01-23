@@ -75,9 +75,9 @@ export default function ObrasPage() {
       case "ENGINEER":
         return "bg-red-500 dark:bg-red-600"
       case "ACCOUNTANT":
-        return "bg-slate-900 dark:bg-slate-700"
+        return "bg-green-500 dark:bg-green-600"
       case "BOTH":
-        return "bg-blue-500 dark:bg-blue-600"
+        return "bg-yellow-500 dark:bg-yellow-600"
       default:
         return "bg-muted"
     }

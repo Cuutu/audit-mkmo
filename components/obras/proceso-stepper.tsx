@@ -27,9 +27,9 @@ export const ProcesoStepper = memo(function ProcesoStepper({ procesos, obraId }:
       case "ENGINEER":
         return "bg-red-500"
       case "ACCOUNTANT":
-        return "bg-slate-900 dark:bg-slate-700"
+        return "bg-green-500"
       case "BOTH":
-        return "bg-blue-500"
+        return "bg-yellow-500"
       default:
         return "bg-muted"
     }

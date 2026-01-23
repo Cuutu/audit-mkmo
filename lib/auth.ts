@@ -47,6 +47,7 @@ export const authOptions: NextAuthOptions = {
             email: user.email,
             name: user.name,
             role: user.role,
+            fotoPerfil: user.fotoPerfil,
           }
         } catch (error) {
           console.error("❌ Error en autenticación:", error)
@@ -60,6 +61,7 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.id = user.id
         token.role = user.role
+        token.fotoPerfil = user.fotoPerfil
       }
       return token
     },
@@ -67,6 +69,7 @@ export const authOptions: NextAuthOptions = {
       if (session.user) {
         session.user.id = token.id as string
         session.user.role = token.role as Role
+        session.user.fotoPerfil = token.fotoPerfil as string | null | undefined
       }
       return session
     },
