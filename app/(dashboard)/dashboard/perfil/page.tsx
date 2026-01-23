@@ -31,10 +31,11 @@ export default async function PerfilPage() {
     updatedAt: user.updatedAt,
   }
 
+  // Obtener solo los últimos 5 logs inicialmente
   const actividadLogs = await prisma.actividadLog.findMany({
     where: { userId: session.user.id },
     orderBy: { createdAt: "desc" },
-    take: 20,
+    take: 5,
   })
 
   return <PerfilClient user={userWithoutPassword} actividadLogs={actividadLogs} />

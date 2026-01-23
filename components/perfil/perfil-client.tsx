@@ -2,11 +2,12 @@
 
 import { useState, useRef } from "react"
 import { useRouter } from "next/navigation"
+import { useQuery } from "@tanstack/react-query"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Role } from "@prisma/client"
 import { formatDateTime } from "@/lib/utils"
-import { Upload, X, User as UserIcon } from "lucide-react"
+import { Upload, X, User as UserIcon, ChevronLeft, ChevronRight } from "lucide-react"
 
 interface ActividadLog {
   id: string
@@ -30,11 +31,37 @@ interface PerfilClientProps {
   actividadLogs: ActividadLog[]
 }
 
-export function PerfilClient({ user, actividadLogs }: PerfilClientProps) {
+export function PerfilClient({ user, actividadLogs: initialLogs }: PerfilClientProps) {
   const router = useRouter()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [uploading, setUploading] = useState(false)
   const [fotoPerfil, setFotoPerfil] = useState(user.fotoPerfil)
+  const [showAll, setShowAll] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
+  const limit = 10
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["perfil-actividad", showAll ? currentPage : 1, showAll ? limit : 5],
+    queryFn: async () => {
+      const page = showAll ? currentPage : 1
+      const pageLimit = showAll ? limit : 5
+      const res = await fetch(`/api/perfil/actividad?page=${page}&limit=${pageLimit}`)
+      if (!res.ok) throw new Error("Error al cargar actividad")
+      return res.json()
+    },
+    initialData: showAll ? undefined : {
+      logs: initialLogs,
+      pagination: {
+        page: 1,
+        limit: 5,
+        total: initialLogs.length,
+        totalPages: 1,
+      },
+    },
+  })
+
+  const logs = data?.logs || initialLogs
+  const pagination = data?.pagination
 
   const getRoleLabel = (role: Role) => {
     switch (role) {
@@ -233,31 +260,85 @@ export function PerfilClient({ user, actividadLogs }: PerfilClientProps) {
 
       <Card>
         <CardHeader>
-          <CardTitle>Historial de Actividad Personal</CardTitle>
-          <CardDescription>Registro de tus modificaciones y acciones</CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Historial de Actividad Personal</CardTitle>
+              <CardDescription>
+                {showAll
+                  ? `Registro completo de actividad (${pagination?.total || 0} total)`
+                  : "Últimas acciones realizadas"}
+              </CardDescription>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
-          {actividadLogs.length > 0 ? (
-            <div className="space-y-2">
-              {actividadLogs.map((log) => (
-                <div
-                  key={log.id}
-                  className="p-3 border rounded-lg hover:bg-accent/50 transition-colors"
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <p className="font-medium">{log.accion}</p>
-                      {log.detalle && (
-                        <p className="text-sm text-muted-foreground">{log.detalle}</p>
-                      )}
-                    </div>
-                    <div className="text-sm text-muted-foreground">
-                      {formatDateTime(log.createdAt)}
+          {isLoading ? (
+            <div className="text-center py-8 text-muted-foreground">
+              Cargando actividad...
+            </div>
+          ) : logs && logs.length > 0 ? (
+            <>
+              <div className="space-y-2">
+                {logs.map((log: ActividadLog) => (
+                  <div
+                    key={log.id}
+                    className="p-3 border rounded-lg hover:bg-accent/50 transition-colors"
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <p className="font-medium">{log.accion}</p>
+                        {log.detalle && (
+                          <p className="text-sm text-muted-foreground">{log.detalle}</p>
+                        )}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        {formatDateTime(log.createdAt)}
+                      </div>
                     </div>
                   </div>
+                ))}
+              </div>
+              {!showAll && pagination && pagination.total > 5 && (
+                <div className="mt-4 pt-4 border-t flex justify-center">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setShowAll(true)
+                      setCurrentPage(1)
+                    }}
+                  >
+                    Ver Registro de Actividad Completo ({pagination.total})
+                  </Button>
                 </div>
-              ))}
-            </div>
+              )}
+              {showAll && pagination && (
+                <div className="mt-4 pt-4 border-t flex items-center justify-between">
+                  <div className="text-sm text-muted-foreground">
+                    Página {pagination.page} de {pagination.totalPages} ({pagination.total} total)
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                      disabled={currentPage === 1}
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                      Anterior
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage((p) => Math.min(pagination.totalPages, p + 1))}
+                      disabled={currentPage >= pagination.totalPages}
+                    >
+                      Siguiente
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </>
           ) : (
             <div className="text-center py-8 text-muted-foreground">
               No hay actividad registrada aún
