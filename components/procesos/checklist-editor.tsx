@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { CheckCircle2, Circle, Plus, Trash2, Save } from "lucide-react"
+import { CheckCircle2, Circle, Plus, Trash2 } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
 export interface ChecklistItem {
@@ -15,22 +15,28 @@ export interface ChecklistItem {
 
 interface ChecklistEditorProps {
   items: ChecklistItem[]
-  onSave: (items: ChecklistItem[]) => Promise<void>
+  onChange?: (items: ChecklistItem[]) => void
   disabled?: boolean
 }
 
-export function ChecklistEditor({ items: initialItems, onSave, disabled }: ChecklistEditorProps) {
+export function ChecklistEditor({ items: initialItems, onChange, disabled }: ChecklistEditorProps) {
   const [items, setItems] = useState<ChecklistItem[]>(initialItems || [])
   const [newItemText, setNewItemText] = useState("")
-  const [saving, setSaving] = useState(false)
 
   useEffect(() => {
     setItems(initialItems || [])
   }, [initialItems])
 
+  const updateItems = (newItems: ChecklistItem[]) => {
+    setItems(newItems)
+    if (onChange) {
+      onChange(newItems)
+    }
+  }
+
   const handleToggle = (id: string) => {
     if (disabled) return
-    setItems(items.map(item =>
+    updateItems(items.map(item =>
       item.id === id ? { ...item, completado: !item.completado } : item
     ))
   }
@@ -45,31 +51,20 @@ export function ChecklistEditor({ items: initialItems, onSave, disabled }: Check
       requerido: false,
     }
     
-    setItems([...items, newItem])
+    updateItems([...items, newItem])
     setNewItemText("")
   }
 
   const handleDelete = (id: string) => {
     if (disabled) return
-    setItems(items.filter(item => item.id !== id))
+    updateItems(items.filter(item => item.id !== id))
   }
 
   const handleToggleRequerido = (id: string) => {
     if (disabled) return
-    setItems(items.map(item =>
+    updateItems(items.map(item =>
       item.id === id ? { ...item, requerido: !item.requerido } : item
     ))
-  }
-
-  const handleSave = async () => {
-    setSaving(true)
-    try {
-      await onSave(items)
-    } catch (error) {
-      console.error("Error al guardar checklist:", error)
-    } finally {
-      setSaving(false)
-    }
   }
 
   const completados = items.filter(item => item.completado).length
@@ -79,23 +74,15 @@ export function ChecklistEditor({ items: initialItems, onSave, disabled }: Check
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle>Checklist de Requeridos</CardTitle>
-            <CardDescription>
-              {total > 0 && (
-                <span>
-                  {completados} de {total} completados ({porcentaje}%)
-                </span>
-              )}
-            </CardDescription>
-          </div>
-          {items.length > 0 && (
-            <Button onClick={handleSave} disabled={disabled || saving} size="sm">
-              <Save className="mr-2 h-4 w-4" />
-              {saving ? "Guardando..." : "Guardar"}
-            </Button>
-          )}
+        <div>
+          <CardTitle>Checklist de Requeridos</CardTitle>
+          <CardDescription>
+            {total > 0 && (
+              <span>
+                {completados} de {total} completados ({porcentaje}%)
+              </span>
+            )}
+          </CardDescription>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">

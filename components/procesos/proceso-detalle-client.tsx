@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import { useQueryClient } from "@tanstack/react-query"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -42,6 +42,38 @@ export function ProcesoDetalleClient({ obra, proceso }: ProcesoDetalleClientProp
   const [estado, setEstado] = useState<ProcesoEstado>(proceso.estado)
   const [avance, setAvance] = useState(proceso.avance.toString())
   const [observaciones, setObservaciones] = useState(proceso.observaciones || "")
+  
+  // Convertir checklist de JSON a ChecklistItem[]
+  const initialChecklistItems = useMemo((): ChecklistItem[] => {
+    if (proceso.checklist && typeof proceso.checklist === 'object' && proceso.checklist !== null) {
+      const checklistArray = Array.isArray(proceso.checklist) ? (proceso.checklist as any[]) : []
+      return checklistArray.map((item: any, index: number) => ({
+        id: item.id || index.toString(),
+        texto: item.texto || item.text || String(item),
+        completado: item.completado || item.completed || false,
+        requerido: item.requerido || item.required || false,
+      }))
+    }
+    return []
+  }, [proceso.checklist])
+
+  const initialDatos = useMemo((): Record<string, any> => {
+    return proceso.datos && typeof proceso.datos === 'object' && proceso.datos !== null
+      ? (proceso.datos as Record<string, any>)
+      : {}
+  }, [proceso.datos])
+
+  const [checklistItems, setChecklistItems] = useState<ChecklistItem[]>(initialChecklistItems)
+  const [datosEstructurados, setDatosEstructurados] = useState<Record<string, any>>(initialDatos)
+
+  // Sincronizar estados cuando cambien los valores iniciales del proceso
+  useEffect(() => {
+    setChecklistItems(initialChecklistItems)
+  }, [initialChecklistItems])
+
+  useEffect(() => {
+    setDatosEstructurados(initialDatos)
+  }, [initialDatos])
   const [loading, setLoading] = useState(false)
   const [showUpload, setShowUpload] = useState(false)
 
@@ -81,6 +113,8 @@ export function ProcesoDetalleClient({ obra, proceso }: ProcesoDetalleClientProp
           estado,
           avance: parseInt(avance),
           observaciones,
+          checklist: checklistItems,
+          datos: datosEstructurados,
         }),
       })
 
@@ -89,6 +123,7 @@ export function ProcesoDetalleClient({ obra, proceso }: ProcesoDetalleClientProp
       router.refresh()
     } catch (error) {
       console.error(error)
+      alert("Error al guardar los cambios. Por favor, intente nuevamente.")
     } finally {
       setLoading(false)
     }
@@ -132,46 +167,6 @@ export function ProcesoDetalleClient({ obra, proceso }: ProcesoDetalleClientProp
     router.refresh()
   }
 
-  const handleChecklistSave = async (items: ChecklistItem[]) => {
-    const res = await fetch(`/api/procesos/${proceso.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ checklist: items }),
-    })
-
-    if (!res.ok) {
-      throw new Error("Error al guardar checklist")
-    }
-
-    router.refresh()
-  }
-
-  const handleDatosSave = async (datos: Record<string, any>) => {
-    const res = await fetch(`/api/procesos/${proceso.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ datos }),
-    })
-
-    if (!res.ok) {
-      throw new Error("Error al guardar datos")
-    }
-
-    router.refresh()
-  }
-
-  // Convertir checklist de JSON a ChecklistItem[]
-  const checklistItems: ChecklistItem[] = proceso.checklist && typeof proceso.checklist === 'object' && proceso.checklist !== null
-    ? (Array.isArray(proceso.checklist)
-        ? (proceso.checklist as any[])
-        : [])
-        .map((item: any, index: number) => ({
-          id: item.id || index.toString(),
-          texto: item.texto || item.text || String(item),
-          completado: item.completado || item.completed || false,
-          requerido: item.requerido || item.required || false,
-        }))
-    : []
 
   return (
     <div className="space-y-6">
@@ -230,10 +225,6 @@ export function ProcesoDetalleClient({ obra, proceso }: ProcesoDetalleClientProp
                 {getResponsableLabel(proceso.responsable)}
               </div>
             </div>
-            <Button onClick={handleSave} disabled={loading} className="w-full">
-              <Save className="mr-2 h-4 w-4" />
-              {loading ? "Guardando..." : "Guardar Cambios"}
-            </Button>
           </CardContent>
         </Card>
 
@@ -262,15 +253,15 @@ export function ProcesoDetalleClient({ obra, proceso }: ProcesoDetalleClientProp
 
       {/* Checklist */}
       <ChecklistEditor
-        items={checklistItems}
-        onSave={handleChecklistSave}
+        items={initialChecklistItems}
+        onChange={setChecklistItems}
       />
 
       {/* Campos Estructurados */}
       <ProcesoFields
         procesoNumero={proceso.numero}
-        datosIniciales={proceso.datos && typeof proceso.datos === 'object' && proceso.datos !== null ? (proceso.datos as Record<string, any>) : null}
-        onSave={handleDatosSave}
+        datosIniciales={initialDatos}
+        onChange={setDatosEstructurados}
       />
 
       {/* Observaciones */}
@@ -340,6 +331,14 @@ export function ProcesoDetalleClient({ obra, proceso }: ProcesoDetalleClientProp
           )}
         </CardContent>
       </Card>
+
+      {/* Botón de guardado único al final */}
+      <div className="flex justify-end pt-4 border-t">
+        <Button onClick={handleSave} disabled={loading} size="lg">
+          <Save className="mr-2 h-4 w-4" />
+          {loading ? "Guardando..." : "Guardar Todos los Cambios"}
+        </Button>
+      </div>
     </div>
   )
 }

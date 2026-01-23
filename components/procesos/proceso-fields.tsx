@@ -1,29 +1,26 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Save } from "lucide-react"
 import { CampoProceso, getCamposProceso } from "@/lib/proceso-fields"
 
 interface ProcesoFieldsProps {
   procesoNumero: number
   datosIniciales: Record<string, any> | null
-  onSave: (datos: Record<string, any>) => Promise<void>
+  onChange?: (datos: Record<string, any>) => void
   disabled?: boolean
 }
 
 export function ProcesoFields({
   procesoNumero,
   datosIniciales,
-  onSave,
+  onChange,
   disabled,
 }: ProcesoFieldsProps) {
   const campos = getCamposProceso(procesoNumero)
   const [datos, setDatos] = useState<Record<string, any>>(datosIniciales || {})
-  const [saving, setSaving] = useState(false)
 
   useEffect(() => {
     setDatos(datosIniciales || {})
@@ -31,17 +28,10 @@ export function ProcesoFields({
 
   const handleChange = (campo: CampoProceso, value: any) => {
     if (disabled) return
-    setDatos({ ...datos, [campo.nombre]: value })
-  }
-
-  const handleSave = async () => {
-    setSaving(true)
-    try {
-      await onSave(datos)
-    } catch (error) {
-      console.error("Error al guardar datos:", error)
-    } finally {
-      setSaving(false)
+    const newDatos = { ...datos, [campo.nombre]: value }
+    setDatos(newDatos)
+    if (onChange) {
+      onChange(newDatos)
     }
   }
 
@@ -58,17 +48,11 @@ export function ProcesoFields({
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle>Datos Estructurados del Proceso</CardTitle>
-            <CardDescription>
-              Complete los campos específicos de este proceso
-            </CardDescription>
-          </div>
-          <Button onClick={handleSave} disabled={disabled || saving} size="sm">
-            <Save className="mr-2 h-4 w-4" />
-            {saving ? "Guardando..." : "Guardar"}
-          </Button>
+        <div>
+          <CardTitle>Datos Estructurados del Proceso</CardTitle>
+          <CardDescription>
+            Complete los campos específicos de este proceso
+          </CardDescription>
         </div>
       </CardHeader>
       <CardContent>
