@@ -212,9 +212,33 @@ export function PlantillasClient({ plantillas: initialPlantillas }: PlantillasCl
             </div>
             <ChecklistEditor
               items={formData.items}
-              onSave={handleSubmit}
+              onChange={(items) => setFormData({ ...formData, items })}
               disabled={loading}
             />
+            <div className="flex justify-end gap-2 pt-4 border-t">
+              <Button
+                variant="outline"
+                onClick={resetForm}
+                disabled={loading}
+              >
+                Cancelar
+              </Button>
+              <Button
+                onClick={() => handleSubmit(formData.items)}
+                disabled={loading || !formData.nombre.trim()}
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Guardando...
+                  </>
+                ) : (
+                  <>
+                    {editingPlantilla ? "Actualizar" : "Crear"} Plantilla
+                  </>
+                )}
+              </Button>
+            </div>
           </CardContent>
         </Card>
       )}
