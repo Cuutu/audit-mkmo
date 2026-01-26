@@ -13,12 +13,27 @@ export function PWAInstall() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null)
   const [showInstallButton, setShowInstallButton] = useState(false)
   const [isInstalled, setIsInstalled] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
 
   useEffect(() => {
+    // Verificar si es un dispositivo móvil
+    const checkMobile = () => {
+      const isMobileDevice = 
+        window.matchMedia("(max-width: 768px)").matches ||
+        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+        ('ontouchstart' in window || navigator.maxTouchPoints > 0)
+      setIsMobile(isMobileDevice)
+    }
+
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+
     // Verificar si ya está instalado
     if (window.matchMedia("(display-mode: standalone)").matches) {
       setIsInstalled(true)
-      return
+      return () => {
+        window.removeEventListener('resize', checkMobile)
+      }
     }
 
     // Registrar el evento beforeinstallprompt
@@ -44,6 +59,7 @@ export function PWAInstall() {
 
     return () => {
       window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt)
+      window.removeEventListener('resize', checkMobile)
     }
   }, [])
 
@@ -64,7 +80,8 @@ export function PWAInstall() {
     setDeferredPrompt(null)
   }
 
-  if (isInstalled || !showInstallButton) {
+  // Solo mostrar en dispositivos móviles
+  if (!isMobile || isInstalled || !showInstallButton) {
     return null
   }
 
