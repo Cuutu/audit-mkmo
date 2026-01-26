@@ -87,32 +87,19 @@ export function UsuariosClient({ usuarios: initialUsuarios }: UsuariosClientProp
   const handleDelete = async (id: string) => {
     const confirmed = await confirmDialog({
       title: "Eliminar Usuario",
-      message: "¿Está seguro de que desea eliminar este usuario? Esta acción no se puede deshacer.",
+      message: "¿Deseas borrar este usuario?",
       confirmText: "Eliminar",
       cancelText: "Cancelar",
       variant: "destructive",
-      onConfirm: async () => {
-        try {
-          const res = await fetch(`/api/admin/usuarios/${id}`, {
-            method: "DELETE",
-          })
-
-          if (!res.ok) {
-            const error = await res.json()
-            throw new Error(error.error || "Error al eliminar usuario")
-          }
-
-          router.refresh()
-          showToast("Usuario eliminado correctamente", "success")
-        } catch (error: any) {
-          showToast(error.message || "Error al eliminar usuario", "error")
-        }
+      onConfirm: () => {
+        // Esta función se ejecuta cuando se confirma, pero la lógica está abajo
       },
     })
 
     if (!confirmed) return
 
     try {
+      setLoading(true)
       const res = await fetch(`/api/admin/usuarios/${id}`, {
         method: "DELETE",
       })
@@ -122,10 +109,14 @@ export function UsuariosClient({ usuarios: initialUsuarios }: UsuariosClientProp
         throw new Error(error.error || "Error al eliminar usuario")
       }
 
+      // Actualizar la lista local de usuarios
+      setUsuarios(usuarios.filter((u) => u.id !== id))
       router.refresh()
       showToast("Usuario eliminado correctamente", "success")
     } catch (error: any) {
       showToast(error.message || "Error al eliminar usuario", "error")
+    } finally {
+      setLoading(false)
     }
   }
 

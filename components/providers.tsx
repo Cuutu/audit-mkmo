@@ -6,6 +6,7 @@ import { useState } from "react"
 import { PWAInstall } from "@/components/pwa/pwa-install"
 import { ToastContainer } from "@/components/ui/toast"
 import { ThemeProvider } from "@/components/ui/theme-provider"
+import { ConfirmDialogContainer } from "@/components/ui/confirm-dialog"
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(() => new QueryClient({
@@ -29,6 +30,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
           {children}
           <PWAInstall />
           <ToastContainer />
+          <ConfirmDialogContainer />
         </ThemeProvider>
       </QueryClientProvider>
     </SessionProvider>
