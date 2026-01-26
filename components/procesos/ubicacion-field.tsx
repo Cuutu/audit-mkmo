@@ -32,74 +32,37 @@ export function UbicacionField({
   }
 
   const isGoogleMapsLink = (text: string): boolean => {
+    if (!text || !text.trim()) return false
+    const trimmed = text.trim()
     return (
-      text.includes("maps.google") ||
-      text.includes("google.com/maps") ||
-      text.includes("goo.gl/maps") ||
-      text.startsWith("https://maps.app.goo.gl") ||
-      text.startsWith("http://maps.google") ||
-      text.startsWith("https://maps.google")
+      trimmed.includes("maps.google") ||
+      trimmed.includes("google.com/maps") ||
+      trimmed.includes("goo.gl/maps") ||
+      trimmed.includes("maps.app.goo.gl") ||
+      trimmed.startsWith("https://maps.app.goo.gl") ||
+      trimmed.startsWith("http://maps.google") ||
+      trimmed.startsWith("https://maps.google") ||
+      trimmed.startsWith("http://goo.gl/maps") ||
+      trimmed.startsWith("https://goo.gl/maps")
     )
   }
 
-  // Convertir link de Google Maps a formato embeddable
-  const getEmbedUrl = (url: string): string | null => {
-    try {
-      // Para links con coordenadas (@lat,lng)
-      const coordMatch = url.match(/@(-?\d+\.\d+),(-?\d+\.\d+)(?:,(\d+[zm]))?/)
-      if (coordMatch) {
-        const lat = coordMatch[1]
-        const lng = coordMatch[2]
-        // Usar el formato de iframe de Google Maps sin API key
-        return `https://www.google.com/maps?q=${lat},${lng}&hl=es&z=15&output=embed`
-      }
-
-      // Para links de place, extraer el nombre del lugar
-      const placeMatch = url.match(/\/place\/([^/?]+)/)
-      if (placeMatch) {
-        const placeName = decodeURIComponent(placeMatch[1].replace(/\+/g, ' '))
-        const encodedPlace = encodeURIComponent(placeName)
-        return `https://www.google.com/maps?q=${encodedPlace}&hl=es&output=embed`
-      }
-
-      // Para links de búsqueda
-      const searchMatch = url.match(/\/search\/([^/?]+)/)
-      if (searchMatch) {
-        const searchQuery = decodeURIComponent(searchMatch[1].replace(/\+/g, ' '))
-        const encodedQuery = encodeURIComponent(searchQuery)
-        return `https://www.google.com/maps?q=${encodedQuery}&hl=es&output=embed`
-      }
-
-      // Para links cortos de maps.app.goo.gl, no podemos incrustarlos directamente
-      // sin expandirlos primero, así que retornamos null
-      if (url.includes("maps.app.goo.gl") || url.includes("goo.gl/maps")) {
-        return null
-      }
-
-      // Intentar usar el link directamente si tiene el formato correcto
-      if (url.includes("google.com/maps") && !url.includes("embed")) {
-        // Agregar output=embed al final del link
-        const separator = url.includes("?") ? "&" : "?"
-        return `${url}${separator}output=embed`
-      }
-
-      return null
-    } catch {
-      return null
+  // Obtener URL para abrir en Google Maps
+  const getMapsUrl = (text: string): string => {
+    if (isGoogleMapsLink(text)) {
+      // Si ya es un link de Google Maps, usarlo directamente
+      return text.trim()
+    } else {
+      // Si es una dirección normal, crear un link de búsqueda
+      const encodedAddress = encodeURIComponent(text.trim())
+      return `https://www.google.com/maps/search/?api=1&query=${encodedAddress}`
     }
   }
 
   const handleSearchInMaps = () => {
     if (inputValue.trim()) {
-      // Si ya es un link de Google Maps, abrirlo directamente
-      if (isGoogleMapsLink(inputValue)) {
-        window.open(inputValue, "_blank")
-      } else {
-        // Si es una dirección, buscar en Google Maps
-        const encodedAddress = encodeURIComponent(inputValue)
-        const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodedAddress}`
-        window.open(mapsUrl, "_blank")
-      }
+      const mapsUrl = getMapsUrl(inputValue)
+      window.open(mapsUrl, "_blank")
     }
   }
 
@@ -112,8 +75,6 @@ export function UbicacionField({
       handleChange(cleanText)
     }
   }
-
-  const embedUrl = isGoogleMapsLink(inputValue) ? getEmbedUrl(inputValue) : null
 
   return (
     <div className="space-y-3">
@@ -148,38 +109,17 @@ export function UbicacionField({
         </Button>
       </div>
       
-      {isGoogleMapsLink(inputValue) && (
-        <div className="space-y-2">
-          {embedUrl ? (
-            <div className="border rounded-lg overflow-hidden">
-              <iframe
-                width="100%"
-                height="300"
-                style={{ border: 0 }}
-                loading="lazy"
-                allowFullScreen
-                referrerPolicy="no-referrer-when-downgrade"
-                src={embedUrl}
-                className="w-full"
-              />
-            </div>
-          ) : (
-            <div className="border rounded-lg p-4 bg-muted/50 text-center text-sm text-muted-foreground">
-              <p>El mapa se mostrará al guardar el enlace</p>
-            </div>
-          )}
-          
-          <div className="flex items-center gap-2">
-            <MapPin className="h-4 w-4 text-blue-600 flex-shrink-0" />
-            <a
-              href={inputValue}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-blue-600 hover:text-blue-700 hover:underline text-sm font-medium"
-            >
-              Ver en Google Maps
-            </a>
-          </div>
+      {inputValue.trim() && (
+        <div className="flex items-center gap-2">
+          <MapPin className="h-4 w-4 text-blue-600 flex-shrink-0" />
+          <a
+            href={getMapsUrl(inputValue)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-600 hover:text-blue-700 hover:underline text-sm font-medium"
+          >
+            Ver en Google Maps
+          </a>
         </div>
       )}
     </div>
