@@ -49,6 +49,6 @@ export default async function ProcesoDetallePage({
     notFound()
   }
 
-  return <ProcesoDetalleClient obra={obra} proceso={proceso} />
+  return <ProcesoDetalleClient obra={obra} proceso={proceso} userRole={session.user.role} />
 }
 

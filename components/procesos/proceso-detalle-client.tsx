@@ -7,9 +7,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { ArrowLeft, Save } from "lucide-react"
+import { ArrowLeft, Save, AlertCircle } from "lucide-react"
 import Link from "next/link"
-import { Obra, Proceso, User, ProcesoEstado, ResponsableTipo, Prisma } from "@prisma/client"
+import { Obra, Proceso, User, ProcesoEstado, ResponsableTipo, Prisma, Role } from "@prisma/client"
 import { formatDate, formatFileSize } from "@/lib/utils"
 import { FileUpload } from "@/components/ui/file-upload"
 import { ChecklistEditor, ChecklistItem } from "./checklist-editor"
@@ -34,9 +34,36 @@ type ProcesoWithRelations = Proceso & {
 interface ProcesoDetalleClientProps {
   obra: Obra
   proceso: ProcesoWithRelations
+  userRole: Role
 }
 
-export function ProcesoDetalleClient({ obra, proceso }: ProcesoDetalleClientProps) {
+// Función helper para verificar permisos según el rol del usuario y el responsable del proceso
+function canModifyProcess(userRole: Role, procesoResponsable: ResponsableTipo): boolean {
+  // ADMIN puede modificar todo
+  if (userRole === "ADMIN") {
+    return true
+  }
+
+  // VIEWER no puede modificar nada
+  if (userRole === "VIEWER") {
+    return false
+  }
+
+  // ENGINEER puede modificar procesos con responsable ENGINEER (rojo) y BOTH (amarillo)
+  if (userRole === "ENGINEER") {
+    return procesoResponsable === "ENGINEER" || procesoResponsable === "BOTH"
+  }
+
+  // ACCOUNTANT puede modificar procesos con responsable ACCOUNTANT (verde) y BOTH (amarillo)
+  if (userRole === "ACCOUNTANT") {
+    return procesoResponsable === "ACCOUNTANT" || procesoResponsable === "BOTH"
+  }
+
+  return false
+}
+
+export function ProcesoDetalleClient({ obra, proceso, userRole }: ProcesoDetalleClientProps) {
+  const canModify = canModifyProcess(userRole, proceso.responsable)
   const router = useRouter()
   const queryClient = useQueryClient()
   const [estado, setEstado] = useState<ProcesoEstado>(proceso.estado)
@@ -199,7 +226,8 @@ export function ProcesoDetalleClient({ obra, proceso }: ProcesoDetalleClientProp
               <select
                 value={estado}
                 onChange={(e) => setEstado(e.target.value as ProcesoEstado)}
-                className="h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                disabled={!canModify}
+                className="h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <option value="NO_INICIADO">No Iniciado</option>
                 <option value="EN_CURSO">En Curso</option>
@@ -215,6 +243,7 @@ export function ProcesoDetalleClient({ obra, proceso }: ProcesoDetalleClientProp
                 max="100"
                 value={avance}
                 onChange={(e) => setAvance(e.target.value)}
+                disabled={!canModify}
               />
             </div>
             <div className="space-y-2">
@@ -251,10 +280,25 @@ export function ProcesoDetalleClient({ obra, proceso }: ProcesoDetalleClientProp
         </Card>
       </div>
 
+      {/* Mensaje de permisos si no puede modificar */}
+      {!canModify && (
+        <Card className="border-yellow-200 bg-yellow-50 dark:bg-yellow-950/30">
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-2 text-yellow-800 dark:text-yellow-200">
+              <AlertCircle className="h-5 w-5" />
+              <p className="text-sm font-medium">
+                No tiene permisos para modificar este proceso. Solo puede modificar procesos asignados a su rol o compartidos (BOTH).
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Checklist */}
       <ChecklistEditor
         items={initialChecklistItems}
         onChange={setChecklistItems}
+        disabled={!canModify}
       />
 
       {/* Campos Estructurados */}
@@ -262,6 +306,7 @@ export function ProcesoDetalleClient({ obra, proceso }: ProcesoDetalleClientProp
         procesoNumero={proceso.numero}
         datosIniciales={initialDatos}
         onChange={setDatosEstructurados}
+        disabled={!canModify}
       />
 
       {/* Observaciones */}
@@ -274,7 +319,8 @@ export function ProcesoDetalleClient({ obra, proceso }: ProcesoDetalleClientProp
             value={observaciones}
             onChange={(e) => setObservaciones(e.target.value)}
             rows={4}
-            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+            disabled={!canModify}
+            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
             placeholder="Agregar observaciones sobre el proceso..."
           />
         </CardContent>
@@ -293,7 +339,10 @@ export function ProcesoDetalleClient({ obra, proceso }: ProcesoDetalleClientProp
                 Archivos adjuntos relacionados con este proceso
               </CardDescription>
             </div>
-            <Button onClick={() => setShowUpload(!showUpload)}>
+            <Button 
+              onClick={() => setShowUpload(!showUpload)}
+              disabled={!canModify}
+            >
               {showUpload ? "Cancelar" : "Subir Archivo"}
             </Button>
           </div>
@@ -333,12 +382,14 @@ export function ProcesoDetalleClient({ obra, proceso }: ProcesoDetalleClientProp
       </Card>
 
       {/* Botón de guardado único al final */}
-      <div className="flex justify-end pt-4 border-t">
-        <Button onClick={handleSave} disabled={loading} size="lg">
-          <Save className="mr-2 h-4 w-4" />
-          {loading ? "Guardando..." : "Guardar Todos los Cambios"}
-        </Button>
-      </div>
+      {canModify && (
+        <div className="flex justify-end pt-4 border-t">
+          <Button onClick={handleSave} disabled={loading} size="lg">
+            <Save className="mr-2 h-4 w-4" />
+            {loading ? "Guardando..." : "Guardar Todos los Cambios"}
+          </Button>
+        </div>
+      )}
     </div>
   )
 }

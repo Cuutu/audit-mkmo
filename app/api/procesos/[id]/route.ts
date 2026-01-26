@@ -2,7 +2,32 @@ import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
-import { ProcesoEstado } from "@prisma/client"
+import { ProcesoEstado, ResponsableTipo, Role } from "@prisma/client"
+
+// Función helper para verificar permisos según el rol del usuario y el responsable del proceso
+function canModifyProcess(userRole: Role, procesoResponsable: ResponsableTipo): boolean {
+  // ADMIN puede modificar todo
+  if (userRole === "ADMIN") {
+    return true
+  }
+
+  // VIEWER no puede modificar nada
+  if (userRole === "VIEWER") {
+    return false
+  }
+
+  // ENGINEER puede modificar procesos con responsable ENGINEER (rojo) y BOTH (amarillo)
+  if (userRole === "ENGINEER") {
+    return procesoResponsable === "ENGINEER" || procesoResponsable === "BOTH"
+  }
+
+  // ACCOUNTANT puede modificar procesos con responsable ACCOUNTANT (verde) y BOTH (amarillo)
+  if (userRole === "ACCOUNTANT") {
+    return procesoResponsable === "ACCOUNTANT" || procesoResponsable === "BOTH"
+  }
+
+  return false
+}
 
 export async function PATCH(
   request: NextRequest,
@@ -24,6 +49,16 @@ export async function PATCH(
 
     if (!proceso) {
       return NextResponse.json({ error: "Proceso no encontrado" }, { status: 404 })
+    }
+
+    // Verificar permisos según el rol del usuario y el responsable del proceso
+    if (!canModifyProcess(session.user.role as Role, proceso.responsable)) {
+      return NextResponse.json(
+        { 
+          error: "No tiene permisos para modificar este proceso. Solo puede modificar procesos asignados a su rol o compartidos (BOTH)." 
+        },
+        { status: 403 }
+      )
     }
 
     const procesoAnterior = { ...proceso }

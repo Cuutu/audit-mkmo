@@ -4,9 +4,35 @@ import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { saveFile, isAllowedFileType } from "@/lib/file-upload"
 import { createAuditLog } from "@/lib/audit"
+import { ResponsableTipo, Role } from "@prisma/client"
 
 // Configurar tiempo máximo para archivos grandes (300 segundos = 5 minutos)
 export const maxDuration = 300
+
+// Función helper para verificar permisos según el rol del usuario y el responsable del proceso
+function canModifyProcess(userRole: Role, procesoResponsable: ResponsableTipo): boolean {
+  // ADMIN puede modificar todo
+  if (userRole === "ADMIN") {
+    return true
+  }
+
+  // VIEWER no puede modificar nada
+  if (userRole === "VIEWER") {
+    return false
+  }
+
+  // ENGINEER puede modificar procesos con responsable ENGINEER (rojo) y BOTH (amarillo)
+  if (userRole === "ENGINEER") {
+    return procesoResponsable === "ENGINEER" || procesoResponsable === "BOTH"
+  }
+
+  // ACCOUNTANT puede modificar procesos con responsable ACCOUNTANT (verde) y BOTH (amarillo)
+  if (userRole === "ACCOUNTANT") {
+    return procesoResponsable === "ACCOUNTANT" || procesoResponsable === "BOTH"
+  }
+
+  return false
+}
 
 export async function POST(
   request: NextRequest,
@@ -55,6 +81,16 @@ export async function POST(
         return NextResponse.json(
           { error: "Proceso no encontrado" },
           { status: 404 }
+        )
+      }
+
+      // Verificar permisos para subir archivos a este proceso
+      if (!canModifyProcess(session.user.role as Role, proceso.responsable)) {
+        return NextResponse.json(
+          { 
+            error: "No tiene permisos para subir archivos a este proceso. Solo puede subir archivos a procesos asignados a su rol o compartidos (BOTH)." 
+          },
+          { status: 403 }
         )
       }
     }
