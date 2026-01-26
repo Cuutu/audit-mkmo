@@ -1,9 +1,16 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { MapPin, ExternalLink } from "lucide-react"
+
+declare global {
+  interface Window {
+    google: any
+    initGoogleMapsAutocomplete: () => void
+  }
+}
 
 interface UbicacionFieldProps {
   id: string
@@ -21,10 +28,89 @@ export function UbicacionField({
   required,
 }: UbicacionFieldProps) {
   const [inputValue, setInputValue] = useState(value || "")
+  const [isGoogleMapsLoaded, setIsGoogleMapsLoaded] = useState(false)
+  const inputRef = useRef<HTMLInputElement>(null)
+  const autocompleteRef = useRef<any>(null)
 
   useEffect(() => {
     setInputValue(value || "")
   }, [value])
+
+  // Cargar Google Maps Places API
+  useEffect(() => {
+    if (disabled || !inputRef.current) return
+
+    // Verificar si Google Maps ya está cargado
+    if (window.google && window.google.maps && window.google.maps.places) {
+      initializeAutocomplete()
+      setIsGoogleMapsLoaded(true)
+      return
+    }
+
+    // Cargar el script de Google Maps Places API solo si hay API key
+    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
+    if (!apiKey) {
+      // Sin API key, el campo funcionará normalmente pero sin autocomplete
+      return
+    }
+
+    // Verificar si el script ya existe
+    if (document.querySelector(`script[src*="maps.googleapis.com"]`)) {
+      if (window.google?.maps?.places) {
+        initializeAutocomplete()
+        setIsGoogleMapsLoaded(true)
+      }
+      return
+    }
+
+    const script = document.createElement("script")
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&language=es`
+    script.async = true
+    script.defer = true
+    
+    script.onload = () => {
+      setIsGoogleMapsLoaded(true)
+      initializeAutocomplete()
+    }
+
+    script.onerror = () => {
+      console.warn("No se pudo cargar Google Maps API. El autocomplete no estará disponible.")
+    }
+
+    document.head.appendChild(script)
+
+    return () => {
+      // Limpiar autocomplete al desmontar
+      if (autocompleteRef.current) {
+        window.google?.maps?.event?.clearInstanceListeners?.(autocompleteRef.current)
+      }
+    }
+  }, [disabled])
+
+  const initializeAutocomplete = () => {
+    if (!inputRef.current || !window.google?.maps?.places) return
+
+    try {
+      const autocomplete = new window.google.maps.places.Autocomplete(inputRef.current, {
+        types: ["geocode", "establishment"],
+        componentRestrictions: { country: "ar" }, // Restringir a Argentina
+        fields: ["formatted_address", "geometry", "place_id", "name"],
+      })
+
+      autocomplete.addListener("place_changed", () => {
+        const place = autocomplete.getPlace()
+        if (place.formatted_address) {
+          const address = place.formatted_address
+          setInputValue(address)
+          onChange(address)
+        }
+      })
+
+      autocompleteRef.current = autocomplete
+    } catch (error) {
+      console.warn("Error al inicializar autocomplete:", error)
+    }
+  }
 
   const handleChange = (newValue: string) => {
     setInputValue(newValue)
@@ -81,17 +167,19 @@ export function UbicacionField({
       <div className="flex gap-2">
         <div className="flex-1 relative">
           <Input
+            ref={inputRef}
             id={id}
             value={inputValue}
             onChange={(e) => handleChange(e.target.value)}
             onPaste={handlePaste}
-            placeholder="Ingrese dirección o pegue un link de Google Maps"
+            placeholder={isGoogleMapsLoaded ? "Buscar dirección en Google Maps..." : "Ingrese dirección o pegue un link de Google Maps"}
             disabled={disabled}
             required={required}
             className="pr-10"
+            autoComplete="off"
           />
           {isGoogleMapsLink(inputValue) && (
-            <div className="absolute right-3 top-1/2 -translate-y-1/2">
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
               <MapPin className="h-4 w-4 text-blue-600" />
             </div>
           )}

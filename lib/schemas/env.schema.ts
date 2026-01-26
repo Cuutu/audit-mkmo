@@ -11,6 +11,7 @@ export const envSchema = z.object({
   VERCEL: z.string().optional(),
   UPLOAD_DIR: z.string().default("./uploads"),
   MAX_FILE_SIZE: z.string().default("10485760"), // 10MB
+  NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: z.string().optional(), // API key opcional para Google Maps
 })
 
 /**
