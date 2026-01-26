@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { CampoProceso, getCamposProceso } from "@/lib/proceso-fields"
+import { UbicacionField } from "./ubicacion-field"
 
 interface ProcesoFieldsProps {
   procesoNumero: number
@@ -67,7 +68,15 @@ export function ProcesoFields({
                   {campo.requerido && <span className="text-red-600 ml-1">*</span>}
                 </Label>
 
-                {campo.tipo === "text" && (
+                {campo.nombre === "ubicacion" ? (
+                  <UbicacionField
+                    id={campo.id}
+                    value={valor}
+                    onChange={(value) => handleChange(campo, value)}
+                    disabled={disabled}
+                    required={campo.requerido}
+                  />
+                ) : campo.tipo === "text" ? (
                   <Input
                     id={campo.id}
                     value={valor}
@@ -76,9 +85,7 @@ export function ProcesoFields({
                     disabled={disabled}
                     required={campo.requerido}
                   />
-                )}
-
-                {campo.tipo === "number" && (
+                ) : campo.tipo === "number" ? (
                   <Input
                     id={campo.id}
                     type="number"
@@ -88,9 +95,7 @@ export function ProcesoFields({
                     disabled={disabled}
                     required={campo.requerido}
                   />
-                )}
-
-                {campo.tipo === "date" && (
+                ) : campo.tipo === "date" ? (
                   <Input
                     id={campo.id}
                     type="date"
@@ -99,9 +104,7 @@ export function ProcesoFields({
                     disabled={disabled}
                     required={campo.requerido}
                   />
-                )}
-
-                {campo.tipo === "textarea" && (
+                ) : campo.tipo === "textarea" ? (
                   <textarea
                     id={campo.id}
                     value={valor}
@@ -112,9 +115,7 @@ export function ProcesoFields({
                     disabled={disabled}
                     required={campo.requerido}
                   />
-                )}
-
-                {campo.tipo === "select" && (
+                ) : campo.tipo === "select" ? (
                   <select
                     id={campo.id}
                     value={valor}
@@ -130,9 +131,7 @@ export function ProcesoFields({
                       </option>
                     ))}
                   </select>
-                )}
-
-                {campo.tipo === "checkbox" && (
+                ) : campo.tipo === "checkbox" ? (
                   <div className="flex items-center gap-2">
                     <input
                       id={campo.id}
@@ -146,7 +145,7 @@ export function ProcesoFields({
                       {campo.label}
                     </label>
                   </div>
-                )}
+                ) : null}
               </div>
             )
           })}
