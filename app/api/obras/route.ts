@@ -111,16 +111,16 @@ export async function POST(request: NextRequest) {
     const { numero, nombre, ano, mes, observaciones, estado, periodo, tipoObraAuditoria } = body
 
     // Validar período
-    const periodoValido = ["PERIODO_2022_2023", "PERIODO_2023_2024", "PERIODO_2024_2025"].includes(periodo)
+    const periodoValido = ["PERIODO_2022_2023", "PERIODO_2023_2024"].includes(periodo)
     if (!periodoValido) {
       return NextResponse.json(
-        { error: "Período inválido" },
+        { error: "Período inválido o no disponible" },
         { status: 400 }
       )
     }
 
-    // Validar que si el período no es 2022-2023, se debe proporcionar tipoObraAuditoria
-    if (periodo !== "PERIODO_2022_2023" && !tipoObraAuditoria) {
+    // Validar que si el período es 2023-2024, se debe proporcionar tipoObraAuditoria
+    if (periodo === "PERIODO_2023_2024" && !tipoObraAuditoria) {
       return NextResponse.json(
         { error: "El tipo de obra es requerido para el período seleccionado" },
         { status: 400 }

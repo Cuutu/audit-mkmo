@@ -12,6 +12,7 @@ export const PERIODOS = {
     fechaFin: new Date("2023-05-31"),
     procesos: [1, 2, 3, 4, 5, 6, 7, 8],
     requiereTipoObra: false,
+    habilitado: true,
   },
   PERIODO_2023_2024: {
     id: "PERIODO_2023_2024",
@@ -21,6 +22,7 @@ export const PERIODOS = {
     fechaFin: new Date("2024-05-31"),
     procesos: [9, 10, 11, 12, 13, 14, 15, 16],
     requiereTipoObra: true,
+    habilitado: true,
   },
   PERIODO_2024_2025: {
     id: "PERIODO_2024_2025",
@@ -30,6 +32,7 @@ export const PERIODOS = {
     fechaFin: new Date("2025-05-31"),
     procesos: [9, 10, 11, 12, 13, 14, 15, 16],
     requiereTipoObra: true,
+    habilitado: false, // Próximamente
   },
 } as const
 
@@ -65,14 +68,15 @@ export const PROCESOS_PERIODO_1 = [
   { numero: 8, nombre: "Análisis de resultados", responsable: "BOTH" as ResponsableTipo },
 ]
 
-// Procesos 9-12 (Obras Terminadas - Períodos 2023-2024 y 2024-2025)
+// Procesos 9-12 (Obras Terminadas - Período 2023-2024)
 export const PROCESOS_OBRAS_TERMINADAS = [
   { 
     numero: 9, 
-    nombre: "Documentación Ejecutiva de la Obra (Terminada)", 
+    nombre: "Documentación Ejecutiva de la Obra", 
     responsable: "ENGINEER" as ResponsableTipo,
     objetivo: "Identificar dentro del Plan de Mejoras y Ampliación u otro; verificar fecha de inicio.",
     evidencia: "Documentación probatoria con identificación del responsable.",
+    categoria: "OBRAS TERMINADAS",
   },
   { 
     numero: 10, 
@@ -80,6 +84,7 @@ export const PROCESOS_OBRAS_TERMINADAS = [
     responsable: "ACCOUNTANT" as ResponsableTipo,
     objetivo: "Discriminación del gasto; fecha de inicio y finalización.",
     evidencia: "Documentación probatoria con identificación del responsable.",
+    categoria: "OBRAS TERMINADAS",
   },
   { 
     numero: 11, 
@@ -87,24 +92,27 @@ export const PROCESOS_OBRAS_TERMINADAS = [
     responsable: "ENGINEER" as ResponsableTipo,
     objetivo: "Registrar modificaciones y revisiones; conformar archivo y registro de obras.",
     evidencia: "Documentación probatoria con identificación del responsable.",
+    categoria: "OBRAS TERMINADAS",
   },
   { 
     numero: 12, 
-    nombre: "Ubicación física de las obras (Terminada)", 
+    nombre: "Ubicación física de las obras", 
     responsable: "ENGINEER" as ResponsableTipo,
     objetivo: "Detalle de ubicación o geolocalización de la obra.",
     evidencia: "Registro fotográfico de obras.",
+    categoria: "OBRAS TERMINADAS",
   },
 ]
 
-// Procesos 13-16 (Obras en Ejecución - Períodos 2023-2024 y 2024-2025)
+// Procesos 13-16 (Obras en Ejecución - Período 2023-2024)
 export const PROCESOS_OBRAS_EN_EJECUCION = [
   { 
     numero: 13, 
-    nombre: "Documentación Ejecutiva de la Obra (En Ejecución)", 
+    nombre: "Documentación Ejecutiva de la Obra", 
     responsable: "ENGINEER" as ResponsableTipo,
     objetivo: "Identificar dentro del Plan de Mejoras y Ampliación u otro; verificar fecha de inicio.",
     evidencia: "Documentación probatoria con identificación del responsable.",
+    categoria: "OBRAS EN EJECUCIÓN",
   },
   { 
     numero: 14, 
@@ -112,6 +120,7 @@ export const PROCESOS_OBRAS_EN_EJECUCION = [
     responsable: "ENGINEER" as ResponsableTipo,
     objetivo: "Conformar archivo y registro de obras.",
     evidencia: "Documentación probatoria con identificación del responsable.",
+    categoria: "OBRAS EN EJECUCIÓN",
   },
   { 
     numero: 15, 
@@ -119,31 +128,35 @@ export const PROCESOS_OBRAS_EN_EJECUCION = [
     responsable: "ACCOUNTANT" as ResponsableTipo,
     objetivo: "Constatar el avance de la ejecución en el período.",
     evidencia: "Documentación probatoria con identificación del responsable.",
+    categoria: "OBRAS EN EJECUCIÓN",
   },
   { 
     numero: 16, 
-    nombre: "Ubicación física de las obras (En Ejecución)", 
+    nombre: "Ubicación física de las obras", 
     responsable: "ENGINEER" as ResponsableTipo,
     objetivo: "Detalle de ubicación o geolocalización.",
     evidencia: "Demarcación planimétrica de distribución de obras.",
+    categoria: "OBRAS EN EJECUCIÓN",
   },
+]
+
+// Todos los procesos del período 2 (9-16)
+export const PROCESOS_PERIODO_2 = [
+  ...PROCESOS_OBRAS_TERMINADAS,
+  ...PROCESOS_OBRAS_EN_EJECUCION,
 ]
 
 // Función para obtener los procesos según el período y tipo de obra
 export function getProcesosParaObra(
   periodo: PeriodoId, 
   tipoObraAuditoria?: TipoObraAuditoriaId
-): typeof PROCESOS_PERIODO_1 | typeof PROCESOS_OBRAS_TERMINADAS | typeof PROCESOS_OBRAS_EN_EJECUCION {
+) {
   if (periodo === "PERIODO_2022_2023") {
     return PROCESOS_PERIODO_1
   }
   
-  // Para períodos 2023-2024 y 2024-2025
-  if (tipoObraAuditoria === "TERMINADA") {
-    return PROCESOS_OBRAS_TERMINADAS
-  }
-  
-  return PROCESOS_OBRAS_EN_EJECUCION
+  // Para períodos 2023-2024: todos los procesos 9-16
+  return PROCESOS_PERIODO_2
 }
 
 // Función para verificar si un período requiere tipo de obra

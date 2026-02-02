@@ -12,7 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { ArrowLeft, Info, Calendar, Building2 } from "lucide-react"
 import Link from "next/link"
 import { FileUpload } from "@/components/ui/file-upload"
-import { PERIODOS_OPTIONS, TIPOS_OBRA_OPTIONS, periodoRequiereTipoObra, getPeriodoInfo } from "@/lib/periodos-config"
+import { PERIODOS_OPTIONS, TIPOS_OBRA_OPTIONS, periodoRequiereTipoObra, getPeriodoInfo, PERIODOS } from "@/lib/periodos-config"
 
 const obraSchema = z.object({
   numero: z.string().min(1, "El número es requerido"),
@@ -24,8 +24,17 @@ const obraSchema = z.object({
   periodo: z.enum(["PERIODO_2022_2023", "PERIODO_2023_2024", "PERIODO_2024_2025"]),
   tipoObraAuditoria: z.enum(["TERMINADA", "EN_EJECUCION"]).optional(),
 }).refine((data) => {
+  // Validar que el período esté habilitado
+  if (data.periodo === "PERIODO_2024_2025") {
+    return false
+  }
+  return true
+}, {
+  message: "Este período aún no está disponible",
+  path: ["periodo"],
+}).refine((data) => {
   // Si el período requiere tipo de obra, debe estar presente
-  if (data.periodo !== "PERIODO_2022_2023" && !data.tipoObraAuditoria) {
+  if (data.periodo === "PERIODO_2023_2024" && !data.tipoObraAuditoria) {
     return false
   }
   return true
@@ -59,7 +68,7 @@ export default function NuevaObraPage() {
 
   const selectedPeriodo = watch("periodo")
   const selectedAno = watch("ano")
-  const requiereTipoObra = selectedPeriodo !== "PERIODO_2022_2023"
+  const requiereTipoObra = selectedPeriodo === "PERIODO_2023_2024"
 
   // Obtener los años válidos según el período seleccionado
   const getAñosParaPeriodo = (periodo: string): number[] => {
@@ -198,11 +207,19 @@ export default function NuevaObraPage() {
                     {...register("periodo")}
                     className="h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                   >
-                    {PERIODOS_OPTIONS.map((periodo) => (
-                      <option key={periodo.value} value={periodo.value}>
-                        {periodo.label} ({periodo.descripcion})
-                      </option>
-                    ))}
+                    {PERIODOS_OPTIONS.map((periodo) => {
+                      const periodoData = PERIODOS[periodo.value as keyof typeof PERIODOS]
+                      const habilitado = periodoData?.habilitado !== false
+                      return (
+                        <option 
+                          key={periodo.value} 
+                          value={periodo.value}
+                          disabled={!habilitado}
+                        >
+                          {periodo.label} ({periodo.descripcion}){!habilitado ? " - Próximamente" : ""}
+                        </option>
+                      )
+                    })}
                   </select>
                   {errors.periodo && (
                     <p className="text-sm text-red-600">{errors.periodo.message}</p>
@@ -237,8 +254,10 @@ export default function NuevaObraPage() {
                 <div>
                   {selectedPeriodo === "PERIODO_2022_2023" ? (
                     <p>Este período incluye los <strong>procesos 1-8</strong> (definición técnica, proyecto, constatación, redeterminación, materiales, mano de obra, base de datos y análisis).</p>
+                  ) : selectedPeriodo === "PERIODO_2023_2024" ? (
+                    <p>Este período incluye los <strong>procesos 9-16</strong>: Documentación ejecutiva, presupuesto/prorrateo, planos/descripción técnica y ubicación física (para obras terminadas: 9-12, para obras en ejecución: 13-16).</p>
                   ) : (
-                    <p>Este período incluye los <strong>procesos 9-16</strong> según el tipo de obra seleccionado: documentación ejecutiva, presupuesto, planos/datos técnicos y ubicación física.</p>
+                    <p>Este período estará disponible <strong>próximamente</strong>.</p>
                   )}
                 </div>
               </div>
