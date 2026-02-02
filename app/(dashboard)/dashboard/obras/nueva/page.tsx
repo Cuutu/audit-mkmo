@@ -58,14 +58,35 @@ export default function NuevaObraPage() {
   })
 
   const selectedPeriodo = watch("periodo")
+  const selectedAno = watch("ano")
   const requiereTipoObra = selectedPeriodo !== "PERIODO_2022_2023"
 
-  // Limpiar tipoObraAuditoria si se cambia a un período que no lo requiere
+  // Obtener los años válidos según el período seleccionado
+  const getAñosParaPeriodo = (periodo: string): number[] => {
+    switch (periodo) {
+      case "PERIODO_2022_2023":
+        return [2022, 2023]
+      case "PERIODO_2023_2024":
+        return [2023, 2024]
+      case "PERIODO_2024_2025":
+        return [2024, 2025]
+      default:
+        return [2022, 2023]
+    }
+  }
+
+  const añosDisponibles = getAñosParaPeriodo(selectedPeriodo)
+
+  // Limpiar tipoObraAuditoria y año si se cambia el período
   useEffect(() => {
     if (!requiereTipoObra) {
       setValue("tipoObraAuditoria", undefined)
     }
-  }, [requiereTipoObra, setValue])
+    // Limpiar el año si no está en el rango del período seleccionado
+    if (selectedAno && !añosDisponibles.includes(parseInt(selectedAno))) {
+      setValue("ano", "")
+    }
+  }, [requiereTipoObra, setValue, selectedPeriodo, añosDisponibles, selectedAno])
 
   const onSubmit = async (data: ObraFormData) => {
     setLoading(true)
@@ -118,7 +139,6 @@ export default function NuevaObraPage() {
     setCaratulaFile(file)
   }
 
-  const años = Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - i)
   const meses = [
     { value: "1", label: "Enero" },
     { value: "2", label: "Febrero" },
@@ -257,7 +277,7 @@ export default function NuevaObraPage() {
                   className="h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                 >
                   <option value="">Seleccione un año</option>
-                  {años.map((año) => (
+                  {añosDisponibles.map((año) => (
                     <option key={año} value={año.toString()}>
                       {año}
                     </option>
