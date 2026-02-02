@@ -255,7 +255,7 @@ export default function NuevaObraPage() {
                   {selectedPeriodo === "PERIODO_2022_2023" ? (
                     <p>Este período incluye los <strong>procesos 1-8</strong> (definición técnica, proyecto, constatación, redeterminación, materiales, mano de obra, base de datos y análisis).</p>
                   ) : selectedPeriodo === "PERIODO_2023_2024" ? (
-                    <p>Este período incluye los <strong>procesos 9-16</strong>: Documentación ejecutiva, presupuesto/prorrateo, planos/descripción técnica y ubicación física (para obras terminadas: 9-12, para obras en ejecución: 13-16).</p>
+                    <p>Seleccione el tipo de obra: <strong>Obra Terminada</strong> (procesos 9-12) o <strong>Obra en Ejecución</strong> (procesos 13-16). Se crearán 4 procesos según el tipo seleccionado.</p>
                   ) : (
                     <p>Este período estará disponible <strong>próximamente</strong>.</p>
                   )}

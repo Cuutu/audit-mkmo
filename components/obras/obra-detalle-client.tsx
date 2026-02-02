@@ -149,11 +149,16 @@ export function ObraDetalleClient({ obra }: ObraDetalleClientProps) {
       {/* Stepper de Procesos */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center justify-between">
+          <CardTitle className="flex items-center justify-between flex-wrap gap-2">
             <span>Progreso de Procesos</span>
             {obra.procesos.length > 0 && (
               <span className="text-sm font-normal text-muted-foreground">
                 Procesos {obra.procesos[0].numero}-{obra.procesos[obra.procesos.length - 1].numero}
+                {tipoObraInfo && (
+                  <span className="ml-1.5 font-medium text-foreground">
+                    ({tipoObraInfo.nombre})
+                  </span>
+                )}
               </span>
             )}
           </CardTitle>

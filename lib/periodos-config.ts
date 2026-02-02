@@ -140,23 +140,22 @@ export const PROCESOS_OBRAS_EN_EJECUCION = [
   },
 ]
 
-// Todos los procesos del período 2 (9-16)
-export const PROCESOS_PERIODO_2 = [
-  ...PROCESOS_OBRAS_TERMINADAS,
-  ...PROCESOS_OBRAS_EN_EJECUCION,
-]
-
 // Función para obtener los procesos según el período y tipo de obra
 export function getProcesosParaObra(
   periodo: PeriodoId, 
   tipoObraAuditoria?: TipoObraAuditoriaId
 ) {
+  // Período 2022-2023: procesos 1-8 (sin necesidad de tipo de obra)
   if (periodo === "PERIODO_2022_2023") {
     return PROCESOS_PERIODO_1
   }
   
-  // Para períodos 2023-2024: todos los procesos 9-16
-  return PROCESOS_PERIODO_2
+  // Período 2023-2024: procesos según el tipo de obra seleccionado
+  if (tipoObraAuditoria === "TERMINADA") {
+    return PROCESOS_OBRAS_TERMINADAS // Procesos 9-12
+  }
+  
+  return PROCESOS_OBRAS_EN_EJECUCION // Procesos 13-16
 }
 
 // Función para verificar si un período requiere tipo de obra
