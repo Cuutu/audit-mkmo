@@ -1,17 +1,18 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { useForm } from "react-hook-form"
+import { useForm, useWatch } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { ArrowLeft } from "lucide-react"
+import { ArrowLeft, Info, Calendar, Building2 } from "lucide-react"
 import Link from "next/link"
 import { FileUpload } from "@/components/ui/file-upload"
+import { PERIODOS_OPTIONS, TIPOS_OBRA_OPTIONS, periodoRequiereTipoObra, getPeriodoInfo } from "@/lib/periodos-config"
 
 const obraSchema = z.object({
   numero: z.string().min(1, "El número es requerido"),
@@ -20,6 +21,17 @@ const obraSchema = z.object({
   mes: z.string().regex(/^(0?[1-9]|1[0-2])$/, "Mes inválido (1-12)"),
   observaciones: z.string().optional(),
   estado: z.enum(["NO_INICIADA", "EN_PROCESO", "FINALIZADA"]).default("NO_INICIADA"),
+  periodo: z.enum(["PERIODO_2022_2023", "PERIODO_2023_2024", "PERIODO_2024_2025"]),
+  tipoObraAuditoria: z.enum(["TERMINADA", "EN_EJECUCION"]).optional(),
+}).refine((data) => {
+  // Si el período requiere tipo de obra, debe estar presente
+  if (data.periodo !== "PERIODO_2022_2023" && !data.tipoObraAuditoria) {
+    return false
+  }
+  return true
+}, {
+  message: "El tipo de obra es requerido para este período",
+  path: ["tipoObraAuditoria"],
 })
 
 type ObraFormData = z.infer<typeof obraSchema>
@@ -34,12 +46,26 @@ export default function NuevaObraPage() {
     register,
     handleSubmit,
     formState: { errors },
+    control,
+    setValue,
+    watch,
   } = useForm<ObraFormData>({
     resolver: zodResolver(obraSchema),
     defaultValues: {
       estado: "NO_INICIADA",
+      periodo: "PERIODO_2022_2023",
     },
   })
+
+  const selectedPeriodo = watch("periodo")
+  const requiereTipoObra = selectedPeriodo !== "PERIODO_2022_2023"
+
+  // Limpiar tipoObraAuditoria si se cambia a un período que no lo requiere
+  useEffect(() => {
+    if (!requiereTipoObra) {
+      setValue("tipoObraAuditoria", undefined)
+    }
+  }, [requiereTipoObra, setValue])
 
   const onSubmit = async (data: ObraFormData) => {
     setLoading(true)
@@ -126,16 +152,77 @@ export default function NuevaObraPage() {
         <CardHeader>
           <CardTitle>Datos de la Obra</CardTitle>
           <CardDescription>
-            Complete los datos básicos de la obra. Los 8 procesos se crearán automáticamente.
+            Complete los datos básicos de la obra. Los procesos se crearán automáticamente según el período seleccionado.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             {error && (
               <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">
                 {error}
               </div>
             )}
+
+            {/* Sección de Período de Auditoría */}
+            <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg space-y-4">
+              <div className="flex items-center gap-2 text-blue-700">
+                <Calendar className="h-5 w-5" />
+                <h3 className="font-semibold">Período de Auditoría</h3>
+              </div>
+              
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="periodo">Seleccionar Período *</Label>
+                  <select
+                    id="periodo"
+                    {...register("periodo")}
+                    className="h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  >
+                    {PERIODOS_OPTIONS.map((periodo) => (
+                      <option key={periodo.value} value={periodo.value}>
+                        {periodo.label} ({periodo.descripcion})
+                      </option>
+                    ))}
+                  </select>
+                  {errors.periodo && (
+                    <p className="text-sm text-red-600">{errors.periodo.message}</p>
+                  )}
+                </div>
+
+                {requiereTipoObra && (
+                  <div className="space-y-2">
+                    <Label htmlFor="tipoObraAuditoria">Tipo de Obra *</Label>
+                    <select
+                      id="tipoObraAuditoria"
+                      {...register("tipoObraAuditoria")}
+                      className="h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    >
+                      <option value="">Seleccione tipo de obra</option>
+                      {TIPOS_OBRA_OPTIONS.map((tipo) => (
+                        <option key={tipo.value} value={tipo.value}>
+                          {tipo.label}
+                        </option>
+                      ))}
+                    </select>
+                    {errors.tipoObraAuditoria && (
+                      <p className="text-sm text-red-600">{errors.tipoObraAuditoria.message}</p>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Info del período seleccionado */}
+              <div className="flex items-start gap-2 text-sm text-blue-600 bg-blue-100 p-3 rounded-md">
+                <Info className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                <div>
+                  {selectedPeriodo === "PERIODO_2022_2023" ? (
+                    <p>Este período incluye los <strong>procesos 1-8</strong> (definición técnica, proyecto, constatación, redeterminación, materiales, mano de obra, base de datos y análisis).</p>
+                  ) : (
+                    <p>Este período incluye los <strong>procesos 9-16</strong> según el tipo de obra seleccionado: documentación ejecutiva, presupuesto, planos/datos técnicos y ubicación física.</p>
+                  )}
+                </div>
+              </div>
+            </div>
 
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">

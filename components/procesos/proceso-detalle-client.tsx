@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { ArrowLeft, Save, AlertCircle } from "lucide-react"
+import { ArrowLeft, Save, AlertCircle, Target, FileText } from "lucide-react"
 import Link from "next/link"
 import { Obra, Proceso, User, ProcesoEstado, ResponsableTipo, Prisma, Role } from "@prisma/client"
 import { formatDate, formatFileSize } from "@/lib/utils"
@@ -16,6 +16,7 @@ import { ChecklistEditor, ChecklistItem } from "./checklist-editor"
 import { ProcesoFields } from "./proceso-fields"
 import { ProcesoHistorial } from "./proceso-historial"
 import { ArchivoItem } from "@/components/archivos/archivo-item"
+import { getInfoProceso } from "@/lib/proceso-fields"
 
 type ProcesoWithRelations = Proceso & {
   responsableUser: { name: string; email: string } | null
@@ -213,6 +214,40 @@ export function ProcesoDetalleClient({ obra, proceso, userRole }: ProcesoDetalle
           </p>
         </div>
       </div>
+
+      {/* Información de Objetivo y Evidencia para procesos 9-16 */}
+      {proceso.numero >= 9 && proceso.numero <= 16 && (() => {
+        const infoProceso = getInfoProceso(proceso.numero)
+        if (!infoProceso) return null
+        return (
+          <Card className="border-blue-200 bg-blue-50/50 dark:bg-blue-950/20">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-blue-800 dark:text-blue-300">
+                <Target className="h-5 w-5" />
+                Objetivo y Evidencia Requerida
+              </CardTitle>
+              <CardDescription>
+                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300">
+                  {infoProceso.categoria}
+                </span>
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label className="text-blue-700 dark:text-blue-300">Objetivo</Label>
+                <p className="mt-1 text-sm text-blue-900 dark:text-blue-100">{infoProceso.objetivo}</p>
+              </div>
+              <div>
+                <Label className="text-blue-700 dark:text-blue-300 flex items-center gap-1">
+                  <FileText className="h-4 w-4" />
+                  Evidencia Requerida
+                </Label>
+                <p className="mt-1 text-sm text-blue-900 dark:text-blue-100">{infoProceso.evidencia}</p>
+              </div>
+            </CardContent>
+          </Card>
+        )
+      })()}
 
       {/* Información del proceso */}
       <div className="grid gap-4 md:grid-cols-2">

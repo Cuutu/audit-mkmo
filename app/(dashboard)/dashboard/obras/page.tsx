@@ -6,15 +6,16 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
-import { Plus, Search, Building2, Loader2 } from "lucide-react"
-import { Obra } from "@prisma/client"
+import { Plus, Search, Building2, Loader2, Calendar } from "lucide-react"
+import { Obra, PeriodoAuditoria, TipoObraAuditoria } from "@prisma/client"
 import { Pagination } from "@/components/ui/pagination"
 import { useDebounce } from "@/lib/hooks/use-debounce"
 import { ObraListSkeleton } from "@/components/ui/skeleton"
+import { PERIODOS_OPTIONS, TIPOS_OBRA_OPTIONS, PERIODOS, TIPOS_OBRA_AUDITORIA } from "@/lib/periodos-config"
 
 interface ObraWithProgress extends Obra {
   avance: number
-  procesos: Array<{ estado: string; responsable: string }>
+  procesos: Array<{ estado: string; responsable: string; numero: number }>
 }
 
 export default function ObrasPage() {
@@ -23,6 +24,8 @@ export default function ObrasPage() {
   const [filtroMes, setFiltroMes] = useState<string>("")
   const [filtroEstado, setFiltroEstado] = useState<string>("")
   const [filtroResponsable, setFiltroResponsable] = useState<string>("")
+  const [filtroPeriodo, setFiltroPeriodo] = useState<string>("")
+  const [filtroTipoObra, setFiltroTipoObra] = useState<string>("")
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 10
 
@@ -33,7 +36,7 @@ export default function ObrasPage() {
     obras: ObraWithProgress[]
     total: number
   }>({
-    queryKey: ["obras", debouncedSearchTerm, filtroAño, filtroMes, filtroEstado, filtroResponsable, currentPage],
+    queryKey: ["obras", debouncedSearchTerm, filtroAño, filtroMes, filtroEstado, filtroResponsable, filtroPeriodo, filtroTipoObra, currentPage],
     queryFn: async () => {
       const params = new URLSearchParams()
       if (debouncedSearchTerm) params.append("search", debouncedSearchTerm)
@@ -41,6 +44,8 @@ export default function ObrasPage() {
       if (filtroMes) params.append("mes", filtroMes)
       if (filtroEstado) params.append("estado", filtroEstado)
       if (filtroResponsable) params.append("responsable", filtroResponsable)
+      if (filtroPeriodo) params.append("periodo", filtroPeriodo)
+      if (filtroTipoObra) params.append("tipoObraAuditoria", filtroTipoObra)
       params.append("page", currentPage.toString())
       params.append("limit", itemsPerPage.toString())
       
@@ -56,7 +61,7 @@ export default function ObrasPage() {
 
   useEffect(() => {
     setCurrentPage(1)
-  }, [debouncedSearchTerm, filtroAño, filtroMes, filtroEstado, filtroResponsable])
+  }, [debouncedSearchTerm, filtroAño, filtroMes, filtroEstado, filtroResponsable, filtroPeriodo, filtroTipoObra])
 
   // Memoizar funciones de estilo para evitar recreaciones
   const getEstadoColor = useMemo(() => (estado: string) => {
@@ -121,7 +126,7 @@ export default function ObrasPage() {
           <CardTitle className="text-lg">Búsqueda y Filtros</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-6">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <div className="lg:col-span-2">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -133,6 +138,39 @@ export default function ObrasPage() {
                 />
               </div>
             </div>
+            <select
+              value={filtroPeriodo}
+              onChange={(e) => {
+                setFiltroPeriodo(e.target.value)
+                // Limpiar filtro de tipo de obra si se cambia a período 2022-2023
+                if (e.target.value === "PERIODO_2022_2023") {
+                  setFiltroTipoObra("")
+                }
+              }}
+              className="h-11 rounded-lg border border-input/50 bg-background px-4 py-2 text-sm transition-all hover:border-input focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1"
+            >
+              <option value="">Todos los períodos</option>
+              {PERIODOS_OPTIONS.map((periodo) => (
+                <option key={periodo.value} value={periodo.value}>
+                  {periodo.label}
+                </option>
+              ))}
+            </select>
+            <select
+              value={filtroTipoObra}
+              onChange={(e) => setFiltroTipoObra(e.target.value)}
+              disabled={filtroPeriodo === "PERIODO_2022_2023"}
+              className="h-11 rounded-lg border border-input/50 bg-background px-4 py-2 text-sm transition-all hover:border-input focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 disabled:opacity-50"
+            >
+              <option value="">Todos los tipos</option>
+              {TIPOS_OBRA_OPTIONS.map((tipo) => (
+                <option key={tipo.value} value={tipo.value}>
+                  {tipo.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mt-4">
             <select
               value={filtroAño}
               onChange={(e) => setFiltroAño(e.target.value)}
@@ -191,7 +229,12 @@ export default function ObrasPage() {
             <ObraListSkeleton />
           ) : obras && obras.length > 0 ? (
             <div className="space-y-3">
-              {obras.map((obra) => (
+              {obras.map((obra) => {
+                const periodoInfo = obra.periodo ? PERIODOS[obra.periodo as keyof typeof PERIODOS] : null
+                const tipoObraInfo = obra.tipoObraAuditoria ? TIPOS_OBRA_AUDITORIA[obra.tipoObraAuditoria as keyof typeof TIPOS_OBRA_AUDITORIA] : null
+                const numProcesos = obra.procesos?.length || (obra.periodo === "PERIODO_2022_2023" ? 8 : 4)
+                
+                return (
                 <Link
                   key={obra.id}
                   href={`/dashboard/obras/${obra.id}`}
@@ -207,8 +250,23 @@ export default function ObrasPage() {
                           <div className="font-semibold truncate group-hover:text-primary transition-colors">
                             {obra.numero} - {obra.nombre}
                           </div>
-                          <div className="text-sm text-muted-foreground mt-0.5">
-                            {obra.mes}/{obra.ano}
+                          <div className="text-sm text-muted-foreground mt-0.5 flex items-center gap-2 flex-wrap">
+                            <span>{obra.mes}/{obra.ano}</span>
+                            {periodoInfo && (
+                              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300">
+                                <Calendar className="h-2.5 w-2.5" />
+                                {periodoInfo.nombre.replace("Período ", "")}
+                              </span>
+                            )}
+                            {tipoObraInfo && (
+                              <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium ${
+                                obra.tipoObraAuditoria === "TERMINADA" 
+                                  ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300"
+                                  : "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300"
+                              }`}>
+                                {tipoObraInfo.nombre.replace("Obra ", "")}
+                              </span>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -225,22 +283,19 @@ export default function ObrasPage() {
                       </span>
                       {/* Semáforos de procesos */}
                       <div className="flex gap-1 flex-shrink-0" role="group" aria-label="Estado de procesos">
-                        {Array.from({ length: 8 }).map((_, i) => {
-                          const proceso = obra.procesos?.[i]
-                          return (
-                            <div
-                              key={i}
-                              className={`w-3 h-3 rounded-full transition-all ${proceso ? getProcesoColor(proceso.responsable) : "bg-muted"}`}
-                              title={`Proceso ${i + 1}: ${proceso ? proceso.responsable : "No iniciado"}`}
-                              aria-label={`Proceso ${i + 1}`}
-                            />
-                          )
-                        })}
+                        {obra.procesos?.map((proceso, i) => (
+                          <div
+                            key={i}
+                            className={`w-3 h-3 rounded-full transition-all ${getProcesoColor(proceso.responsable)}`}
+                            title={`Proceso ${proceso.numero}: ${proceso.responsable}`}
+                            aria-label={`Proceso ${proceso.numero}`}
+                          />
+                        ))}
                       </div>
                     </div>
                   </div>
                 </Link>
-              ))}
+              )})}
             </div>
           ) : (
             <div className="text-center py-8 text-muted-foreground">

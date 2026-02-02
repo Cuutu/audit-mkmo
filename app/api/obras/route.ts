@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
-import { ResponsableTipo } from "@prisma/client"
+import { ResponsableTipo, PeriodoAuditoria, TipoObraAuditoria } from "@prisma/client"
+import { getProcesosParaObra, PeriodoId, TipoObraAuditoriaId } from "@/lib/periodos-config"
 
 export async function GET(request: NextRequest) {
   try {
@@ -17,6 +18,8 @@ export async function GET(request: NextRequest) {
     const mes = searchParams.get("mes")
     const estado = searchParams.get("estado")
     const responsable = searchParams.get("responsable")
+    const periodo = searchParams.get("periodo")
+    const tipoObraAuditoria = searchParams.get("tipoObraAuditoria")
 
     const where: any = {
       deleted: false,
@@ -49,6 +52,14 @@ export async function GET(request: NextRequest) {
       }
     }
 
+    if (periodo) {
+      where.periodo = periodo
+    }
+
+    if (tipoObraAuditoria) {
+      where.tipoObraAuditoria = tipoObraAuditoria
+    }
+
     const page = parseInt(searchParams.get("page") || "1")
     const limit = parseInt(searchParams.get("limit") || "10")
     const skip = (page - 1) * limit
@@ -61,6 +72,7 @@ export async function GET(request: NextRequest) {
             select: {
               estado: true,
               responsable: true,
+              numero: true,
             },
           },
           createdBy: {
@@ -96,7 +108,32 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { numero, nombre, ano, mes, observaciones, estado } = body
+    const { numero, nombre, ano, mes, observaciones, estado, periodo, tipoObraAuditoria } = body
+
+    // Validar período
+    const periodoValido = ["PERIODO_2022_2023", "PERIODO_2023_2024", "PERIODO_2024_2025"].includes(periodo)
+    if (!periodoValido) {
+      return NextResponse.json(
+        { error: "Período inválido" },
+        { status: 400 }
+      )
+    }
+
+    // Validar que si el período no es 2022-2023, se debe proporcionar tipoObraAuditoria
+    if (periodo !== "PERIODO_2022_2023" && !tipoObraAuditoria) {
+      return NextResponse.json(
+        { error: "El tipo de obra es requerido para el período seleccionado" },
+        { status: 400 }
+      )
+    }
+
+    // Validar tipoObraAuditoria
+    if (tipoObraAuditoria && !["TERMINADA", "EN_EJECUCION"].includes(tipoObraAuditoria)) {
+      return NextResponse.json(
+        { error: "Tipo de obra inválido" },
+        { status: 400 }
+      )
+    }
 
     // Validar que no exista otra obra con el mismo número
     const obraExistente = await prisma.obra.findFirst({
@@ -121,21 +158,17 @@ export async function POST(request: NextRequest) {
         mes: parseInt(mes),
         observaciones,
         estado: estado || "NO_INICIADA",
+        periodo: periodo as PeriodoAuditoria,
+        tipoObraAuditoria: tipoObraAuditoria ? (tipoObraAuditoria as TipoObraAuditoria) : null,
         createdById: session.user.id,
       },
     })
 
-    // Crear los 8 procesos iniciales
-    const procesosData = [
-      { numero: 1, nombre: "Definición técnica de la obra", responsable: "ENGINEER" },
-      { numero: 2, nombre: "Proyecto / costo proyectado / cronograma", responsable: "ENGINEER" },
-      { numero: 3, nombre: "Constatación (planos / revisiones / registro fotográfico)", responsable: "ENGINEER" },
-      { numero: 4, nombre: "Método de redeterminación / desglose económico", responsable: "ACCOUNTANT" },
-      { numero: 5, nombre: "Materiales involucrados", responsable: "BOTH" },
-      { numero: 6, nombre: "Mano de obra involucrada", responsable: "ACCOUNTANT" },
-      { numero: 7, nombre: "Creación de base de datos", responsable: "BOTH" },
-      { numero: 8, nombre: "Análisis de resultados", responsable: "BOTH" },
-    ]
+    // Obtener los procesos según el período y tipo de obra
+    const procesosData = getProcesosParaObra(
+      periodo as PeriodoId,
+      tipoObraAuditoria as TipoObraAuditoriaId | undefined
+    )
 
     await prisma.proceso.createMany({
       data: procesosData.map((p) => ({

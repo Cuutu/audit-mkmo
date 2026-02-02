@@ -62,13 +62,16 @@ export function ProcesoFields({
             const valor = datos[campo.nombre] ?? ""
 
             return (
-              <div key={campo.id} className="space-y-2">
+              <div key={campo.id} className={`space-y-2 ${campo.tipo === "textarea" ? "md:col-span-2" : ""}`}>
                 <Label htmlFor={campo.id}>
                   {campo.label}
                   {campo.requerido && <span className="text-red-600 ml-1">*</span>}
                 </Label>
+                {campo.descripcion && (
+                  <p className="text-xs text-muted-foreground -mt-1">{campo.descripcion}</p>
+                )}
 
-                {campo.nombre === "ubicacion" ? (
+                {campo.nombre === "ubicacion" || campo.nombre === "ubicacion_texto" ? (
                   <UbicacionField
                     id={campo.id}
                     value={valor}
@@ -144,6 +147,35 @@ export function ProcesoFields({
                     <label htmlFor={campo.id} className="text-sm">
                       {campo.label}
                     </label>
+                  </div>
+                ) : campo.tipo === "percentage" ? (
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Input
+                        id={campo.id}
+                        type="number"
+                        min="0"
+                        max="100"
+                        value={valor}
+                        onChange={(e) => {
+                          const val = Math.min(100, Math.max(0, parseInt(e.target.value) || 0))
+                          handleChange(campo, val)
+                        }}
+                        placeholder="0-100"
+                        disabled={disabled}
+                        required={campo.requerido}
+                        className="w-24"
+                      />
+                      <span className="text-sm text-muted-foreground">%</span>
+                    </div>
+                    {typeof valor === 'number' && valor > 0 && (
+                      <div className="w-full bg-muted rounded-full h-2">
+                        <div 
+                          className="bg-primary h-2 rounded-full transition-all duration-300"
+                          style={{ width: `${valor}%` }}
+                        />
+                      </div>
+                    )}
                   </div>
                 ) : null}
               </div>

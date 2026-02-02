@@ -7,9 +7,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { ProcesoStepper } from "@/components/obras/proceso-stepper"
 import { ProcesoTabs } from "@/components/obras/proceso-tabs"
-import { ArrowLeft, Edit, Trash2 } from "lucide-react"
+import { ArrowLeft, Edit, Trash2, Calendar, Building2 } from "lucide-react"
 import Link from "next/link"
-import { Obra, Proceso, User, ObraEstado } from "@prisma/client"
+import { Obra, Proceso, User, ObraEstado, PeriodoAuditoria, TipoObraAuditoria } from "@prisma/client"
+import { PERIODOS, TIPOS_OBRA_AUDITORIA } from "@/lib/periodos-config"
 
 type ObraWithRelations = Obra & {
   procesos: (Proceso & {
@@ -76,6 +77,10 @@ export function ObraDetalleClient({ obra }: ObraDetalleClientProps) {
     "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
   ]
 
+  // Obtener información del período
+  const periodoInfo = obra.periodo ? PERIODOS[obra.periodo as keyof typeof PERIODOS] : null
+  const tipoObraInfo = obra.tipoObraAuditoria ? TIPOS_OBRA_AUDITORIA[obra.tipoObraAuditoria as keyof typeof TIPOS_OBRA_AUDITORIA] : null
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -93,6 +98,25 @@ export function ObraDetalleClient({ obra }: ObraDetalleClientProps) {
             <p className="text-sm sm:text-base text-muted-foreground">
               {meses[obra.mes - 1]} {obra.ano} • Creada por {obra.createdBy.name}
             </p>
+            {/* Badges de período y tipo */}
+            <div className="flex flex-wrap gap-2 mt-2">
+              {periodoInfo && (
+                <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300">
+                  <Calendar className="h-3 w-3" />
+                  {periodoInfo.nombre}
+                </span>
+              )}
+              {tipoObraInfo && (
+                <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium ${
+                  obra.tipoObraAuditoria === "TERMINADA" 
+                    ? "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300"
+                    : "bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300"
+                }`}>
+                  <Building2 className="h-3 w-3" />
+                  {tipoObraInfo.nombre}
+                </span>
+              )}
+            </div>
           </div>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
@@ -125,7 +149,19 @@ export function ObraDetalleClient({ obra }: ObraDetalleClientProps) {
       {/* Stepper de Procesos */}
       <Card>
         <CardHeader>
-          <CardTitle>Progreso de Procesos</CardTitle>
+          <CardTitle className="flex items-center justify-between">
+            <span>Progreso de Procesos</span>
+            {obra.procesos.length > 0 && (
+              <span className="text-sm font-normal text-muted-foreground">
+                Procesos {obra.procesos[0].numero}-{obra.procesos[obra.procesos.length - 1].numero}
+              </span>
+            )}
+          </CardTitle>
+          {tipoObraInfo && (
+            <p className="text-sm text-muted-foreground mt-1">
+              {tipoObraInfo.descripcion}
+            </p>
+          )}
         </CardHeader>
         <CardContent>
           <ProcesoStepper procesos={obra.procesos} obraId={obra.id} />

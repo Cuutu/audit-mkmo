@@ -9,9 +9,10 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { ArrowLeft } from "lucide-react"
+import { ArrowLeft, Calendar, Building2, Info } from "lucide-react"
 import Link from "next/link"
-import { Obra, ObraEstado } from "@prisma/client"
+import { Obra, ObraEstado, PeriodoAuditoria, TipoObraAuditoria } from "@prisma/client"
+import { PERIODOS, TIPOS_OBRA_AUDITORIA } from "@/lib/periodos-config"
 
 const obraSchema = z.object({
   numero: z.string().min(1, "El número es requerido"),
@@ -32,6 +33,10 @@ export function EditarObraClient({ obra }: EditarObraClientProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
+
+  // Obtener información del período
+  const periodoInfo = obra.periodo ? PERIODOS[obra.periodo as keyof typeof PERIODOS] : null
+  const tipoObraInfo = obra.tipoObraAuditoria ? TIPOS_OBRA_AUDITORIA[obra.tipoObraAuditoria as keyof typeof TIPOS_OBRA_AUDITORIA] : null
 
   const {
     register,
@@ -112,10 +117,41 @@ export function EditarObraClient({ obra }: EditarObraClientProps) {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             {error && (
               <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">
                 {error}
+              </div>
+            )}
+
+            {/* Información del Período (solo lectura) */}
+            {periodoInfo && (
+              <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="flex items-center gap-2 text-blue-700 mb-3">
+                  <Calendar className="h-5 w-5" />
+                  <h3 className="font-semibold">Período de Auditoría</h3>
+                </div>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div>
+                    <Label className="text-blue-700">Período</Label>
+                    <p className="mt-1 font-medium">{periodoInfo.nombre}</p>
+                    <p className="text-sm text-blue-600">{periodoInfo.descripcion}</p>
+                  </div>
+                  {tipoObraInfo && (
+                    <div>
+                      <Label className="text-blue-700">Tipo de Obra</Label>
+                      <p className="mt-1 font-medium flex items-center gap-2">
+                        <Building2 className="h-4 w-4" />
+                        {tipoObraInfo.nombre}
+                      </p>
+                      <p className="text-sm text-blue-600">{tipoObraInfo.descripcion}</p>
+                    </div>
+                  )}
+                </div>
+                <div className="flex items-start gap-2 mt-3 text-sm text-blue-600 bg-blue-100 p-2 rounded-md">
+                  <Info className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                  <p>El período y tipo de obra no pueden modificarse una vez creada la obra, ya que esto afectaría los procesos asociados.</p>
+                </div>
               </div>
             )}
 

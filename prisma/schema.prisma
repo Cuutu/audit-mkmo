@@ -23,6 +23,17 @@ enum ObraEstado {
   FINALIZADA
 }
 
+enum TipoObraAuditoria {
+  TERMINADA
+  EN_EJECUCION
+}
+
+enum PeriodoAuditoria {
+  PERIODO_2022_2023   // 1 Jun 2022 - 31 May 2023 (Procesos 1-8)
+  PERIODO_2023_2024   // 1 Jun 2023 - 31 May 2024 (Procesos 9-16)
+  PERIODO_2024_2025   // 1 Jun 2024 - 31 May 2025 (Procesos 9-16)
+}
+
 enum ProcesoEstado {
   NO_INICIADO
   EN_CURSO
@@ -67,23 +78,30 @@ model User {
 }
 
 model Obra {
-  id            String     @id @default(auto()) @map("_id") @db.ObjectId
-  numero        String
-  nombre        String
-  ano           Int
-  mes           Int
-  estado        ObraEstado @default(NO_INICIADA)
-  observaciones String?
-  avance        Int        @default(0) // 0-100
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
-  createdById   String     @db.ObjectId
-  createdBy     User       @relation("ObraCreatedBy", fields: [createdById], references: [id])
-  procesos      Proceso[]
-  archivos      Archivo[]
-  auditLogs     AuditLog[]
-  deleted       Boolean    @default(false)
-  deletedAt     DateTime?
+  id                String              @id @default(auto()) @map("_id") @db.ObjectId
+  numero            String
+  nombre            String
+  ano               Int
+  mes               Int
+  estado            ObraEstado          @default(NO_INICIADA)
+  periodo           PeriodoAuditoria    @default(PERIODO_2022_2023)
+  tipoObraAuditoria TipoObraAuditoria?  // Solo para períodos 2023-2024 y 2024-2025
+  observaciones     String?
+  avance            Int                 @default(0) // 0-100
+  // Campos adicionales para procesos 9-16
+  planReferencia    String?             // Plan de Mejoras y Ampliación u otro
+  ubicacionTexto    String?             // Detalle de ubicación
+  geoLatitud        Float?              // Geolocalización latitud
+  geoLongitud       Float?              // Geolocalización longitud
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  createdById       String              @db.ObjectId
+  createdBy         User                @relation("ObraCreatedBy", fields: [createdById], references: [id])
+  procesos          Proceso[]
+  archivos          Archivo[]
+  auditLogs         AuditLog[]
+  deleted           Boolean             @default(false)
+  deletedAt         DateTime?
 
   @@unique([numero, ano, mes])
   @@index([createdById])
@@ -92,27 +110,33 @@ model Obra {
   @@index([deleted, estado])
   @@index([deleted, ano, mes])
   @@index([numero, deleted])
+  @@index([periodo])
+  @@index([tipoObraAuditoria])
   @@map("obras")
 }
 
 model Proceso {
-  id              String          @id @default(auto()) @map("_id") @db.ObjectId
-  obraId          String          @db.ObjectId
-  obra            Obra            @relation(fields: [obraId], references: [id])
-  numero          Int // 1-8
-  nombre          String
-  estado          ProcesoEstado   @default(NO_INICIADO)
-  responsable     ResponsableTipo
-  avance          Int             @default(0) // 0-100
-  responsableId   String?         @db.ObjectId
-  responsableUser User?           @relation(fields: [responsableId], references: [id])
-  checklist       Json? // Array de items del checklist
-  datos           Json? // Datos estructurados del proceso
-  observaciones   String?
-  createdAt       DateTime        @default(now())
-  updatedAt       DateTime        @updatedAt
-  archivos        Archivo[]
-  auditLogs       AuditLog[]
+  id                    String          @id @default(auto()) @map("_id") @db.ObjectId
+  obraId                String          @db.ObjectId
+  obra                  Obra            @relation(fields: [obraId], references: [id])
+  numero                Int             // 1-8 para período 2022-2023, 9-16 para períodos 2023-2024 y 2024-2025
+  nombre                String
+  estado                ProcesoEstado   @default(NO_INICIADO)
+  responsable           ResponsableTipo
+  avance                Int             @default(0) // 0-100
+  responsableId         String?         @db.ObjectId
+  responsableUser       User?           @relation(fields: [responsableId], references: [id])
+  checklist             Json?           // Array de items del checklist
+  datos                 Json?           // Datos estructurados del proceso
+  observaciones         String?
+  // Campos para registrar responsable de evidencias (procesos 9-16)
+  responsableNombre     String?         // Nombre del responsable de la evidencia
+  responsableCargo      String?         // Cargo/rol del responsable
+  responsableFecha      DateTime?       // Fecha de carga
+  createdAt             DateTime        @default(now())
+  updatedAt             DateTime        @updatedAt
+  archivos              Archivo[]
+  auditLogs             AuditLog[]
 
   @@unique([obraId, numero])
   @@index([obraId])
@@ -214,9 +238,9 @@ model Parametro {
 
 model ChecklistTemplate {
   id            String   @id @default(auto()) @map("_id") @db.ObjectId
-  procesoNumero Int // 1-8
+  procesoNumero Int      // 1-8 para período 2022-2023, 9-16 para períodos 2023-2024 y 2024-2025
   nombre        String
-  items         Json // Array de items del checklist
+  items         Json     // Array de items del checklist
   activo        Boolean  @default(true)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
