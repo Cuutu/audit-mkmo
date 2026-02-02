@@ -68,6 +68,7 @@ export default function NuevaObraPage() {
 
   const selectedPeriodo = watch("periodo")
   const selectedAno = watch("ano")
+  const selectedMes = watch("mes")
   const requiereTipoObra = selectedPeriodo === "PERIODO_2023_2024"
 
   // Obtener los años válidos según el período seleccionado
@@ -84,18 +85,37 @@ export default function NuevaObraPage() {
     }
   }
 
-  const añosDisponibles = getAñosParaPeriodo(selectedPeriodo)
+  // Período va de 1 junio (año A) a 31 mayo (año B). Meses válidos:
+  // - Si el año es el primero del período: junio a diciembre (6-12)
+  // - Si el año es el segundo del período: enero a mayo (1-5)
+  const getMesesParaPeriodoYAno = (periodo: string, ano: string): number[] => {
+    if (!ano) return []
+    const años = getAñosParaPeriodo(periodo)
+    const añoNum = parseInt(ano)
+    if (añoNum === años[0]) {
+      return [6, 7, 8, 9, 10, 11, 12] // Junio a diciembre
+    }
+    if (añoNum === años[1]) {
+      return [1, 2, 3, 4, 5] // Enero a mayo
+    }
+    return []
+  }
 
-  // Limpiar tipoObraAuditoria y año si se cambia el período
+  const añosDisponibles = getAñosParaPeriodo(selectedPeriodo)
+  const mesesDisponibles = getMesesParaPeriodoYAno(selectedPeriodo, selectedAno)
+
+  // Limpiar tipoObraAuditoria, año y mes si se cambia el período o el año
   useEffect(() => {
     if (!requiereTipoObra) {
       setValue("tipoObraAuditoria", undefined)
     }
-    // Limpiar el año si no está en el rango del período seleccionado
     if (selectedAno && !añosDisponibles.includes(parseInt(selectedAno))) {
       setValue("ano", "")
     }
-  }, [requiereTipoObra, setValue, selectedPeriodo, añosDisponibles, selectedAno])
+    if (selectedMes && mesesDisponibles.length > 0 && !mesesDisponibles.includes(parseInt(selectedMes))) {
+      setValue("mes", "")
+    }
+  }, [requiereTipoObra, setValue, selectedPeriodo, añosDisponibles, selectedAno, selectedMes, mesesDisponibles])
 
   const onSubmit = async (data: ObraFormData) => {
     setLoading(true)
@@ -313,14 +333,28 @@ export default function NuevaObraPage() {
                   id="mes"
                   {...register("mes")}
                   className="h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  disabled={!selectedAno}
                 >
-                  <option value="">Seleccione un mes</option>
-                  {meses.map((mes) => (
-                    <option key={mes.value} value={mes.value}>
-                      {mes.label}
-                    </option>
-                  ))}
+                  <option value="">
+                    {selectedAno
+                      ? "Seleccione un mes"
+                      : "Seleccione primero un año"}
+                  </option>
+                  {meses
+                    .filter((mes) => mesesDisponibles.includes(parseInt(mes.value)))
+                    .map((mes) => (
+                      <option key={mes.value} value={mes.value}>
+                        {mes.label}
+                      </option>
+                    ))}
                 </select>
+                {selectedAno && mesesDisponibles.length > 0 && (
+                  <p className="text-xs text-muted-foreground">
+                    {mesesDisponibles.length === 5
+                      ? "Enero a mayo (cierre del período)"
+                      : "Junio a diciembre (inicio del período)"}
+                  </p>
+                )}
                 {errors.mes && (
                   <p className="text-sm text-red-600">{errors.mes.message}</p>
                 )}
