@@ -6,8 +6,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
-import { Plus, Search, Building2, Loader2, Calendar } from "lucide-react"
-import { Obra, PeriodoAuditoria, TipoObraAuditoria } from "@prisma/client"
+import { Plus, Search, Building2, Calendar } from "lucide-react"
+import { Obra } from "@prisma/client"
 import { Pagination } from "@/components/ui/pagination"
 import { useDebounce } from "@/lib/hooks/use-debounce"
 import { ObraListSkeleton } from "@/components/ui/skeleton"
@@ -23,7 +23,6 @@ export default function ObrasPage() {
   const [filtroAño, setFiltroAño] = useState<string>("")
   const [filtroMes, setFiltroMes] = useState<string>("")
   const [filtroEstado, setFiltroEstado] = useState<string>("")
-  const [filtroResponsable, setFiltroResponsable] = useState<string>("")
   const [filtroPeriodo, setFiltroPeriodo] = useState<string>("")
   const [filtroTipoObra, setFiltroTipoObra] = useState<string>("")
   const [currentPage, setCurrentPage] = useState(1)
@@ -36,14 +35,13 @@ export default function ObrasPage() {
     obras: ObraWithProgress[]
     total: number
   }>({
-    queryKey: ["obras", debouncedSearchTerm, filtroAño, filtroMes, filtroEstado, filtroResponsable, filtroPeriodo, filtroTipoObra, currentPage],
+    queryKey: ["obras", debouncedSearchTerm, filtroAño, filtroMes, filtroEstado, filtroPeriodo, filtroTipoObra, currentPage],
     queryFn: async () => {
       const params = new URLSearchParams()
       if (debouncedSearchTerm) params.append("search", debouncedSearchTerm)
       if (filtroAño) params.append("ano", filtroAño)
       if (filtroMes) params.append("mes", filtroMes)
       if (filtroEstado) params.append("estado", filtroEstado)
-      if (filtroResponsable) params.append("responsable", filtroResponsable)
       if (filtroPeriodo) params.append("periodo", filtroPeriodo)
       if (filtroTipoObra) params.append("tipoObraAuditoria", filtroTipoObra)
       params.append("page", currentPage.toString())
@@ -61,7 +59,7 @@ export default function ObrasPage() {
 
   useEffect(() => {
     setCurrentPage(1)
-  }, [debouncedSearchTerm, filtroAño, filtroMes, filtroEstado, filtroResponsable, filtroPeriodo, filtroTipoObra])
+  }, [debouncedSearchTerm, filtroAño, filtroMes, filtroEstado, filtroPeriodo, filtroTipoObra])
 
   // Memoizar funciones de estilo para evitar recreaciones
   const getEstadoColor = useMemo(() => (estado: string) => {
@@ -88,8 +86,11 @@ export default function ObrasPage() {
     }
   }, [])
 
-  // Memoizar arrays estáticos
-  const años = useMemo(() => Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - i), [])
+  // Años desde 2022 hasta el actual
+  const años = useMemo(() => {
+    const currentYear = new Date().getFullYear()
+    return Array.from({ length: currentYear - 2022 + 1 }, (_, i) => currentYear - i)
+  }, [])
   const meses = useMemo(() => [
     { value: "1", label: "Enero" },
     { value: "2", label: "Febrero" },
@@ -142,15 +143,12 @@ export default function ObrasPage() {
               value={filtroPeriodo}
               onChange={(e) => {
                 setFiltroPeriodo(e.target.value)
-                // Limpiar filtro de tipo de obra si se cambia a período 2022-2023
-                if (e.target.value === "PERIODO_2022_2023") {
-                  setFiltroTipoObra("")
-                }
+                if (e.target.value === "PERIODO_2022_2023") setFiltroTipoObra("")
               }}
-              className="h-11 rounded-lg border border-input/50 bg-background px-4 py-2 text-sm transition-all hover:border-input focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1"
+              className="h-11 w-full min-w-0 rounded-lg border border-input bg-background px-4 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1"
             >
               <option value="">Todos los períodos</option>
-              {PERIODOS_OPTIONS.map((periodo) => (
+              {PERIODOS_OPTIONS.filter((p) => PERIODOS[p.value as keyof typeof PERIODOS]?.habilitado !== false).map((periodo) => (
                 <option key={periodo.value} value={periodo.value}>
                   {periodo.label}
                 </option>
@@ -160,7 +158,7 @@ export default function ObrasPage() {
               value={filtroTipoObra}
               onChange={(e) => setFiltroTipoObra(e.target.value)}
               disabled={filtroPeriodo === "PERIODO_2022_2023"}
-              className="h-11 rounded-lg border border-input/50 bg-background px-4 py-2 text-sm transition-all hover:border-input focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 disabled:opacity-50"
+              className="h-11 w-full min-w-0 rounded-lg border border-input bg-background px-4 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <option value="">Todos los tipos</option>
               {TIPOS_OBRA_OPTIONS.map((tipo) => (
@@ -170,11 +168,11 @@ export default function ObrasPage() {
               ))}
             </select>
           </div>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mt-4">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mt-4">
             <select
               value={filtroAño}
               onChange={(e) => setFiltroAño(e.target.value)}
-              className="h-11 rounded-lg border border-input/50 bg-background px-4 py-2 text-sm transition-all hover:border-input focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1"
+              className="h-11 w-full min-w-0 rounded-lg border border-input bg-background px-4 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1"
             >
               <option value="">Todos los años</option>
               {años.map((año) => (
@@ -186,7 +184,7 @@ export default function ObrasPage() {
             <select
               value={filtroMes}
               onChange={(e) => setFiltroMes(e.target.value)}
-              className="h-11 rounded-lg border border-input/50 bg-background px-4 py-2 text-sm transition-all hover:border-input focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1"
+              className="h-11 w-full min-w-0 rounded-lg border border-input bg-background px-4 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1"
             >
               <option value="">Todos los meses</option>
               {meses.map((mes) => (
@@ -198,22 +196,12 @@ export default function ObrasPage() {
             <select
               value={filtroEstado}
               onChange={(e) => setFiltroEstado(e.target.value)}
-              className="h-11 rounded-lg border border-input/50 bg-background px-4 py-2 text-sm transition-all hover:border-input focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1"
+              className="h-11 w-full min-w-0 rounded-lg border border-input bg-background px-4 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1"
             >
               <option value="">Todos los estados</option>
               <option value="NO_INICIADA">No Iniciada</option>
               <option value="EN_PROCESO">En Proceso</option>
               <option value="FINALIZADA">Finalizada</option>
-            </select>
-            <select
-              value={filtroResponsable}
-              onChange={(e) => setFiltroResponsable(e.target.value)}
-              className="h-11 rounded-lg border border-input/50 bg-background px-4 py-2 text-sm transition-all hover:border-input focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1"
-            >
-              <option value="">Todos los responsables</option>
-              <option value="ENGINEER">Ingeniero</option>
-              <option value="ACCOUNTANT">Contador</option>
-              <option value="BOTH">Ambos</option>
             </select>
           </div>
         </CardContent>
