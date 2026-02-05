@@ -21,26 +21,41 @@ export async function GET(request: NextRequest) {
     const periodo = searchParams.get("periodo") || null
     const tipoObraAuditoria = searchParams.get("tipoObraAuditoria") || null
 
-    const where: any = { deleted: false }
+    // Construir condiciones base
+    const baseConditions: any = { deleted: false }
 
     if (añoParam) {
       const anoNum = parseInt(añoParam, 10)
-      if (!Number.isNaN(anoNum)) where.ano = anoNum
+      if (!Number.isNaN(anoNum)) baseConditions.ano = anoNum
     }
     if (mesParam) {
       const mesNum = parseInt(mesParam, 10)
-      if (!Number.isNaN(mesNum) && mesNum >= 1 && mesNum <= 12) where.mes = mesNum
+      if (!Number.isNaN(mesNum) && mesNum >= 1 && mesNum <= 12) baseConditions.mes = mesNum
     }
-    if (estado) where.estado = estado
+    if (estado) baseConditions.estado = estado
     if (responsable) {
-      where.procesos = { some: { responsable: responsable as ResponsableTipo } }
+      baseConditions.procesos = { some: { responsable: responsable as ResponsableTipo } }
     }
     if (tipoObraAuditoria) {
-      where.tipoObraAuditoria = tipoObraAuditoria as TipoObraAuditoria
+      baseConditions.tipoObraAuditoria = tipoObraAuditoria as TipoObraAuditoria
     }
 
-    // Condiciones extra que se combinan con AND (búsqueda y/o período 2022-2023)
-    const andConditions: Record<string, unknown>[] = []
+    // Construir condiciones adicionales que requieren AND
+    const andConditions: any[] = []
+
+    // Filtro período - manejo especial para 2022-2023 que debe incluir obras sin período
+    const periodoEnum = periodo ? (periodo as PeriodoAuditoria) : null
+    let where: any
+    let needsSpecialPeriodQuery = false
+
+    if (periodoEnum === PeriodoAuditoria.PERIODO_2022_2023) {
+      // Para 2022-2023 necesitamos incluir obras con ese período O sin período (antiguas)
+      // Como Prisma con MongoDB no maneja bien null en enums, hacemos dos consultas
+      needsSpecialPeriodQuery = true
+    } else if (periodoEnum) {
+      // Para otros períodos, simplemente filtramos por el enum
+      baseConditions.periodo = periodoEnum
+    }
 
     // Búsqueda por texto
     if (search) {
@@ -52,54 +67,137 @@ export async function GET(request: NextRequest) {
       })
     }
 
-    // Filtro período: valor en MongoDB es string "PERIODO_2022_2023" / "PERIODO_2023_2024"
-    if (periodo) {
-      if (periodo === "PERIODO_2022_2023") {
-        // Obras con ese periodo o sin periodo (antiguas)
-        andConditions.push({
-          OR: [
-            { periodo: "PERIODO_2022_2023" },
-            { periodo: null },
-          ],
-        })
-      } else {
-        where.periodo = periodo
+    // Combinar todas las condiciones (excepto período si es 2022-2023)
+    if (andConditions.length > 0) {
+      where = {
+        AND: [
+          baseConditions,
+          ...andConditions,
+        ],
       }
+    } else {
+      where = baseConditions
     }
 
-    if (andConditions.length > 0) {
-      where = { AND: [where, ...andConditions] }
-    }
+    // Log para depuración
+    console.log("🔍 Filtro período:", periodo)
+    console.log("🔍 Necesita consulta especial:", needsSpecialPeriodQuery)
+    console.log("🔍 Where construido:", JSON.stringify(where, null, 2))
 
     const page = parseInt(searchParams.get("page") || "1")
     const limit = parseInt(searchParams.get("limit") || "10")
     const skip = (page - 1) * limit
 
-    const [obras, total] = await Promise.all([
-      prisma.obra.findMany({
-        where,
-        include: {
-          procesos: {
-            select: {
-              estado: true,
-              responsable: true,
-              numero: true,
+    let obras: any[]
+    let total: number
+
+    if (needsSpecialPeriodQuery) {
+      // Para 2022-2023: hacer dos consultas y combinarlas
+      // Consulta 1: obras con periodo = PERIODO_2022_2023
+      const whereConPeriodo = andConditions.length > 0
+        ? { AND: [{ ...baseConditions, periodo: PeriodoAuditoria.PERIODO_2022_2023 }, ...andConditions] }
+        : { ...baseConditions, periodo: PeriodoAuditoria.PERIODO_2022_2023 }
+      
+      // Consulta 2: obras sin periodo o con periodo null
+      // Construimos el where sin el filtro de período y luego filtramos manualmente
+      const whereSinPeriodoFiltro = andConditions.length > 0
+        ? { AND: [baseConditions, ...andConditions] }
+        : baseConditions
+      
+      // Hacemos la consulta sin filtro de período y luego filtramos en memoria
+      // para incluir solo obras con periodo null/undefined o PERIODO_2022_2023
+      const [obrasConPeriodo, todasLasObrasSinFiltroPeriodo, totalConPeriodo] = await Promise.all([
+        prisma.obra.findMany({
+          where: whereConPeriodo,
+          include: {
+            procesos: {
+              select: {
+                estado: true,
+                responsable: true,
+                numero: true,
+              },
+            },
+            createdBy: {
+              select: {
+                name: true,
+              },
             },
           },
-          createdBy: {
-            select: {
-              name: true,
+          orderBy: {
+            updatedAt: "desc",
+          },
+        }),
+        // Consulta sin filtro de período para obtener obras antiguas
+        prisma.obra.findMany({
+          where: whereSinPeriodoFiltro,
+          include: {
+            procesos: {
+              select: {
+                estado: true,
+                responsable: true,
+                numero: true,
+              },
+            },
+            createdBy: {
+              select: {
+                name: true,
+              },
             },
           },
-        },
-        orderBy: {
-          updatedAt: "desc",
-        },
-        skip,
-        take: limit,
-      }),
-      prisma.obra.count({ where }),
-    ])
+          orderBy: {
+            updatedAt: "desc",
+          },
+        }),
+        prisma.obra.count({ where: whereConPeriodo }),
+      ])
+      
+      // Filtrar obras sin período o con período null/undefined (obras antiguas)
+      // Excluir obras con otros períodos y las que ya están en obrasConPeriodo
+      const idsConPeriodo = new Set(obrasConPeriodo.map(o => o.id))
+      const obrasSinPeriodo = todasLasObrasSinFiltroPeriodo.filter(obra => 
+        !idsConPeriodo.has(obra.id) && // No incluir duplicados
+        (!obra.periodo || obra.periodo === null) // Solo obras sin período o con null
+      )
+      
+      // Combinar resultados, eliminar duplicados por ID, ordenar y paginar
+      const todasLasObras = [...obrasConPeriodo, ...obrasSinPeriodo]
+      const obrasUnicas = Array.from(
+        new Map(todasLasObras.map(obra => [obra.id, obra])).values()
+      )
+      obrasUnicas.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+      obras = obrasUnicas.slice(skip, skip + limit)
+      
+      total = obrasUnicas.length
+    } else {
+      // Consulta normal para otros casos
+      const [obrasResult, totalResult] = await Promise.all([
+        prisma.obra.findMany({
+          where,
+          include: {
+            procesos: {
+              select: {
+                estado: true,
+                responsable: true,
+                numero: true,
+              },
+            },
+            createdBy: {
+              select: {
+                name: true,
+              },
+            },
+          },
+          orderBy: {
+            updatedAt: "desc",
+          },
+          skip,
+          take: limit,
+        }),
+        prisma.obra.count({ where }),
+      ])
+      obras = obrasResult
+      total = totalResult
+    }
 
     return NextResponse.json({ obras, total })
   } catch (error) {
