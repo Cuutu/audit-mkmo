@@ -206,14 +206,14 @@ export default function NuevaObraPage() {
         </div>
       </div>
 
-      <Card>
+      <Card className="border-0 shadow-soft bg-card/95 dark:bg-card/95 backdrop-blur-sm">
         <CardHeader>
           <CardTitle>Datos de la Obra</CardTitle>
           <CardDescription>
             Complete los datos básicos de la obra. Los procesos se crearán automáticamente según el período seleccionado.
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pb-8">
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             {error && (
               <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">
