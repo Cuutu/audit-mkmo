@@ -21,9 +21,25 @@ export async function GET(request: NextRequest) {
     const periodo = searchParams.get("periodo") || null
     const tipoObraAuditoria = searchParams.get("tipoObraAuditoria") || null
 
-    const andConditions: any[] = [{ deleted: false }]
+    const base: any = { deleted: false }
+    if (añoParam) {
+      const anoNum = parseInt(añoParam, 10)
+      if (!Number.isNaN(anoNum)) base.ano = anoNum
+    }
+    if (mesParam) {
+      const mesNum = parseInt(mesParam, 10)
+      if (!Number.isNaN(mesNum) && mesNum >= 1 && mesNum <= 12) base.mes = mesNum
+    }
+    if (estado) base.estado = estado
+    if (responsable) {
+      base.procesos = { some: { responsable: responsable as ResponsableTipo } }
+    }
+    if (tipoObraAuditoria) {
+      base.tipoObraAuditoria = tipoObraAuditoria as TipoObraAuditoria
+    }
 
-    // Búsqueda por texto (número o nombre)
+    const andConditions: any[] = [base]
+
     if (search) {
       andConditions.push({
         OR: [
@@ -33,46 +49,17 @@ export async function GET(request: NextRequest) {
       })
     }
 
-    if (añoParam) {
-      const anoNum = parseInt(añoParam, 10)
-      if (!Number.isNaN(anoNum)) {
-        andConditions.push({ ano: anoNum })
-      }
-    }
-
-    if (mesParam) {
-      const mesNum = parseInt(mesParam, 10)
-      if (!Number.isNaN(mesNum) && mesNum >= 1 && mesNum <= 12) {
-        andConditions.push({ mes: mesNum })
-      }
-    }
-
-    if (estado) {
-      andConditions.push({ estado })
-    }
-
-    if (responsable) {
-      andConditions.push({
-        procesos: { some: { responsable: responsable as ResponsableTipo } },
-      })
-    }
-
-    // Filtro período: 2022-2023 incluye obras con ese periodo o sin periodo (creadas antes del campo)
     if (periodo) {
       if (periodo === "PERIODO_2022_2023") {
         andConditions.push({
           OR: [
-            { periodo: periodo as PeriodoAuditoria },
+            { periodo: PeriodoAuditoria.PERIODO_2022_2023 },
             { periodo: null },
           ],
         })
-      } else {
-        andConditions.push({ periodo: periodo as PeriodoAuditoria })
+      } else if (periodo === "PERIODO_2023_2024") {
+        andConditions.push({ periodo: PeriodoAuditoria.PERIODO_2023_2024 })
       }
-    }
-
-    if (tipoObraAuditoria) {
-      andConditions.push({ tipoObraAuditoria: tipoObraAuditoria as TipoObraAuditoria })
     }
 
     const where = andConditions.length === 1 ? andConditions[0] : { AND: andConditions }
