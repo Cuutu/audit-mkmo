@@ -58,7 +58,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
       </div>
 
       {/* Contenido principal */}
-      <div className="lg:pl-72">
+      <div className="lg:pl-72 min-h-screen flex flex-col">
         {/* Header */}
         <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-xl border-b border-border shadow-soft">
           <div className="flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8 gap-2">
@@ -103,7 +103,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
         </header>
 
         {/* Contenido */}
-        <main className="p-4 sm:p-6 lg:p-8">
+        <main className="p-4 sm:p-6 lg:p-8 flex-1">
           {children}
         </main>
       </div>

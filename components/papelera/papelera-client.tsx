@@ -191,7 +191,7 @@ export function PapeleraClient({ archivos, obras, userRole }: PapeleraClientProp
               {obras.map((obra) => (
                 <div
                   key={obra.id}
-                  className="flex items-center justify-between p-4 border border-border/50 rounded-xl bg-gradient-to-r from-white to-red-50/30 hover:shadow-soft transition-all"
+                  className="flex items-center justify-between p-4 border border-border/50 rounded-xl bg-card/50 dark:bg-card/30 hover:shadow-soft transition-all"
                 >
                   <div className="flex-1">
                     <p className="font-semibold text-lg">{obra.numero} - {obra.nombre}</p>
@@ -253,7 +253,7 @@ export function PapeleraClient({ archivos, obras, userRole }: PapeleraClientProp
               {archivos.map((archivo) => (
                 <div
                   key={archivo.id}
-                  className="flex items-center justify-between p-4 border border-border/50 rounded-xl bg-gradient-to-r from-white to-blue-50/30 hover:shadow-soft transition-all"
+                  className="flex items-center justify-between p-4 border border-border/50 rounded-xl bg-card/50 dark:bg-card/30 hover:shadow-soft transition-all"
                 >
                   <div className="flex-1">
                     <p className="font-medium">{archivo.nombreOriginal}</p>
