@@ -216,14 +216,14 @@ export default function NuevaObraPage() {
         <CardContent className="pb-8">
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             {error && (
-              <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">
+              <div className="p-3 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800/50 rounded-md">
                 {error}
               </div>
             )}
 
             {/* Sección de Período de Control */}
-            <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg space-y-4">
-              <div className="flex items-center gap-2 text-blue-700">
+            <div className="p-4 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/50 rounded-lg space-y-4">
+              <div className="flex items-center gap-2 text-blue-700 dark:text-blue-300">
                 <Calendar className="h-5 w-5" />
                 <h3 className="font-semibold">Período de Control</h3>
               </div>
@@ -298,7 +298,7 @@ export default function NuevaObraPage() {
               </div>
 
               {/* Info del período seleccionado */}
-              <div className="flex items-start gap-2 text-sm text-blue-600 bg-blue-100 p-3 rounded-md">
+              <div className="flex items-start gap-2 text-sm text-blue-600 dark:text-blue-300 bg-blue-100 dark:bg-blue-900/40 p-3 rounded-md">
                 <Info className="h-4 w-4 mt-0.5 flex-shrink-0" />
                 <div>
                   {selectedPeriodo === "PERIODO_2022_2023" ? (
