@@ -21,25 +21,28 @@ export async function GET(request: NextRequest) {
     const periodo = searchParams.get("periodo") || null
     const tipoObraAuditoria = searchParams.get("tipoObraAuditoria") || null
 
-    const base: any = { deleted: false }
+    const where: any = { deleted: false }
+
     if (añoParam) {
       const anoNum = parseInt(añoParam, 10)
-      if (!Number.isNaN(anoNum)) base.ano = anoNum
+      if (!Number.isNaN(anoNum)) where.ano = anoNum
     }
     if (mesParam) {
       const mesNum = parseInt(mesParam, 10)
-      if (!Number.isNaN(mesNum) && mesNum >= 1 && mesNum <= 12) base.mes = mesNum
+      if (!Number.isNaN(mesNum) && mesNum >= 1 && mesNum <= 12) where.mes = mesNum
     }
-    if (estado) base.estado = estado
+    if (estado) where.estado = estado
     if (responsable) {
-      base.procesos = { some: { responsable: responsable as ResponsableTipo } }
+      where.procesos = { some: { responsable: responsable as ResponsableTipo } }
     }
     if (tipoObraAuditoria) {
-      base.tipoObraAuditoria = tipoObraAuditoria as TipoObraAuditoria
+      where.tipoObraAuditoria = tipoObraAuditoria as TipoObraAuditoria
     }
 
-    const andConditions: any[] = [base]
+    // Condiciones extra que se combinan con AND (búsqueda y/o período 2022-2023)
+    const andConditions: Record<string, unknown>[] = []
 
+    // Búsqueda por texto
     if (search) {
       andConditions.push({
         OR: [
@@ -49,20 +52,24 @@ export async function GET(request: NextRequest) {
       })
     }
 
+    // Filtro período: valor en MongoDB es string "PERIODO_2022_2023" / "PERIODO_2023_2024"
     if (periodo) {
       if (periodo === "PERIODO_2022_2023") {
+        // Obras con ese periodo o sin periodo (antiguas)
         andConditions.push({
           OR: [
-            { periodo: PeriodoAuditoria.PERIODO_2022_2023 },
+            { periodo: "PERIODO_2022_2023" },
             { periodo: null },
           ],
         })
-      } else if (periodo === "PERIODO_2023_2024") {
-        andConditions.push({ periodo: PeriodoAuditoria.PERIODO_2023_2024 })
+      } else {
+        where.periodo = periodo
       }
     }
 
-    const where = andConditions.length === 1 ? andConditions[0] : { AND: andConditions }
+    if (andConditions.length > 0) {
+      where = { AND: [where, ...andConditions] }
+    }
 
     const page = parseInt(searchParams.get("page") || "1")
     const limit = parseInt(searchParams.get("limit") || "10")
