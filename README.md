@@ -1,6 +1,6 @@
-# Sistema de Auditoría de Obras
+# Sistema de Control de Obras
 
-Sistema completo para la gestión y auditoría de obras con seguimiento de 8 procesos.
+Sistema completo para la gestión y control de obras con seguimiento de procesos.
 
 ## 🚀 Tecnologías Utilizadas
 

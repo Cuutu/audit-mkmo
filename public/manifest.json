@@ -1,7 +1,7 @@
 {
-  "name": "Sistema de Auditoría de Obras",
-  "short_name": "Auditoría Obras",
-  "description": "Gestión y auditoría de obras con seguimiento de procesos",
+  "name": "Sistema de Control de Obras",
+  "short_name": "Control Obras",
+  "description": "Gestión y control de obras con seguimiento de procesos",
   "start_url": "/dashboard",
   "display": "standalone",
   "background_color": "#ffffff",

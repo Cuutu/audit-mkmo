@@ -14,22 +14,22 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Sistema de Auditoría de Obras",
-  description: "Gestión y auditoría de obras con seguimiento de procesos",
+  title: "Sistema de Control de Obras",
+  description: "Gestión y control de obras con seguimiento de procesos",
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Auditoría Obras",
+    title: "Control Obras",
   },
   formatDetection: {
     telephone: false,
   },
   openGraph: {
     type: "website",
-    siteName: "Sistema de Auditoría de Obras",
-    title: "Sistema de Auditoría de Obras",
-    description: "Gestión y auditoría de obras con seguimiento de procesos",
+    siteName: "Sistema de Control de Obras",
+    title: "Sistema de Control de Obras",
+    description: "Gestión y control de obras con seguimiento de procesos",
   },
   icons: {
     icon: [

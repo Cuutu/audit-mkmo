@@ -212,11 +212,11 @@ export default function NuevaObraPage() {
               </div>
             )}
 
-            {/* Sección de Período de Auditoría */}
+            {/* Sección de Período de Control */}
             <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg space-y-4">
               <div className="flex items-center gap-2 text-blue-700">
                 <Calendar className="h-5 w-5" />
-                <h3 className="font-semibold">Período de Auditoría</h3>
+                <h3 className="font-semibold">Período de Control</h3>
               </div>
               
               <div className="grid gap-4 md:grid-cols-2">

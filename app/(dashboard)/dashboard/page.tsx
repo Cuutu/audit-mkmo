@@ -110,7 +110,7 @@ export default async function DashboardPage() {
         </Card>
         <Card className="border-0 shadow-soft bg-gradient-to-br from-card to-amber-50/30 dark:to-amber-950/20">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-            <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wide">En Auditoría</CardTitle>
+            <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wide">En Control</CardTitle>
             <div className="h-8 w-8 rounded-lg bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center">
               <Clock className="h-4 w-4 text-amber-600 dark:text-amber-400" />
             </div>

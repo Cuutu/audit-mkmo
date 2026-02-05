@@ -127,7 +127,7 @@ function SidebarContent({
           <div className="h-8 w-8 rounded-lg bg-primary/10 dark:bg-primary/20 flex items-center justify-center">
             <Building2 className="h-5 w-5 text-primary" />
           </div>
-          <h1 className="text-lg font-semibold tracking-tight">Auditoría Obras</h1>
+          <h1 className="text-lg font-semibold tracking-tight">Control Obras</h1>
         </div>
       </div>
       <nav className="flex-1 space-y-1 px-3 py-6">

@@ -1,4 +1,4 @@
-// Configuración de períodos de auditoría y procesos asociados
+// Configuración de períodos de control y procesos asociados
 
 import { ResponsableTipo } from "@prisma/client"
 

@@ -64,7 +64,7 @@ function LoginForm() {
             </div>
           </div>
           <CardTitle className="text-2xl font-semibold text-center tracking-tight">
-            Auditoría de Obras
+            Control de Obras
           </CardTitle>
           <CardDescription className="text-center text-sm">
             Ingrese sus credenciales para acceder
@@ -130,7 +130,7 @@ export default function LoginPage() {
               </div>
             </div>
             <CardTitle className="text-2xl font-semibold text-center tracking-tight">
-              Auditoría de Obras
+              Control de Obras
             </CardTitle>
             <CardDescription className="text-center text-sm">
               Cargando...
