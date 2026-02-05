@@ -11,7 +11,7 @@ import { Obra } from "@prisma/client"
 import { Pagination } from "@/components/ui/pagination"
 import { useDebounce } from "@/lib/hooks/use-debounce"
 import { ObraListSkeleton } from "@/components/ui/skeleton"
-import { PERIODOS_OPTIONS, TIPOS_OBRA_OPTIONS, PERIODOS, TIPOS_OBRA_AUDITORIA } from "@/lib/periodos-config"
+import { PERIODOS_OPTIONS, PERIODOS, TIPOS_OBRA_AUDITORIA } from "@/lib/periodos-config"
 
 interface ObraWithProgress extends Obra {
   avance: number
@@ -24,7 +24,6 @@ export default function ObrasPage() {
   const [filtroMes, setFiltroMes] = useState<string>("")
   const [filtroEstado, setFiltroEstado] = useState<string>("")
   const [filtroPeriodo, setFiltroPeriodo] = useState<string>("")
-  const [filtroTipoObra, setFiltroTipoObra] = useState<string>("")
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 10
 
@@ -35,7 +34,7 @@ export default function ObrasPage() {
     obras: ObraWithProgress[]
     total: number
   }>({
-    queryKey: ["obras", debouncedSearchTerm, filtroAño, filtroMes, filtroEstado, filtroPeriodo, filtroTipoObra, currentPage],
+    queryKey: ["obras", debouncedSearchTerm, filtroAño, filtroMes, filtroEstado, filtroPeriodo, currentPage],
     queryFn: async () => {
       const params = new URLSearchParams()
       if (debouncedSearchTerm) params.append("search", debouncedSearchTerm)
@@ -43,7 +42,6 @@ export default function ObrasPage() {
       if (filtroMes) params.append("mes", filtroMes)
       if (filtroEstado) params.append("estado", filtroEstado)
       if (filtroPeriodo) params.append("periodo", filtroPeriodo)
-      if (filtroTipoObra) params.append("tipoObraAuditoria", filtroTipoObra)
       params.append("page", currentPage.toString())
       params.append("limit", itemsPerPage.toString())
       
@@ -59,7 +57,7 @@ export default function ObrasPage() {
 
   useEffect(() => {
     setCurrentPage(1)
-  }, [debouncedSearchTerm, filtroAño, filtroMes, filtroEstado, filtroPeriodo, filtroTipoObra])
+  }, [debouncedSearchTerm, filtroAño, filtroMes, filtroEstado, filtroPeriodo])
 
   // Memoizar funciones de estilo para evitar recreaciones
   const getEstadoColor = useMemo(() => (estado: string) => {
@@ -127,8 +125,8 @@ export default function ObrasPage() {
           <CardTitle className="text-lg">Búsqueda y Filtros</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <div className="lg:col-span-2">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
+            <div>
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -141,29 +139,13 @@ export default function ObrasPage() {
             </div>
             <select
               value={filtroPeriodo}
-              onChange={(e) => {
-                setFiltroPeriodo(e.target.value)
-                if (e.target.value === "PERIODO_2022_2023") setFiltroTipoObra("")
-              }}
+              onChange={(e) => setFiltroPeriodo(e.target.value)}
               className="h-11 w-full min-w-0 rounded-lg border border-input bg-background px-4 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1"
             >
               <option value="">Todos los períodos</option>
               {PERIODOS_OPTIONS.filter((p) => PERIODOS[p.value as keyof typeof PERIODOS]?.habilitado !== false).map((periodo) => (
                 <option key={periodo.value} value={periodo.value}>
                   {periodo.label}
-                </option>
-              ))}
-            </select>
-            <select
-              value={filtroTipoObra}
-              onChange={(e) => setFiltroTipoObra(e.target.value)}
-              disabled={filtroPeriodo === "PERIODO_2022_2023"}
-              className="h-11 w-full min-w-0 rounded-lg border border-input bg-background px-4 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <option value="">Todos los tipos</option>
-              {TIPOS_OBRA_OPTIONS.map((tipo) => (
-                <option key={tipo.value} value={tipo.value}>
-                  {tipo.label}
                 </option>
               ))}
             </select>

@@ -21,59 +21,61 @@ export async function GET(request: NextRequest) {
     const periodo = searchParams.get("periodo") || null
     const tipoObraAuditoria = searchParams.get("tipoObraAuditoria") || null
 
-    const where: any = {
-      deleted: false,
-    }
+    const andConditions: any[] = [{ deleted: false }]
 
     // Búsqueda por texto (número o nombre)
     if (search) {
-      where.OR = [
-        { numero: { contains: search, mode: "insensitive" } },
-        { nombre: { contains: search, mode: "insensitive" } },
-      ]
+      andConditions.push({
+        OR: [
+          { numero: { contains: search, mode: "insensitive" } },
+          { nombre: { contains: search, mode: "insensitive" } },
+        ],
+      })
     }
 
-    // Filtro año: solo si es un número válido
     if (añoParam) {
       const anoNum = parseInt(añoParam, 10)
       if (!Number.isNaN(anoNum)) {
-        where.ano = anoNum
+        andConditions.push({ ano: anoNum })
       }
     }
 
-    // Filtro mes: solo si es un número válido (1-12)
     if (mesParam) {
       const mesNum = parseInt(mesParam, 10)
       if (!Number.isNaN(mesNum) && mesNum >= 1 && mesNum <= 12) {
-        where.mes = mesNum
+        andConditions.push({ mes: mesNum })
       }
     }
 
     if (estado) {
-      where.estado = estado
+      andConditions.push({ estado })
     }
 
     if (responsable) {
-      where.procesos = {
-        some: {
-          responsable: responsable as ResponsableTipo,
-        },
-      }
+      andConditions.push({
+        procesos: { some: { responsable: responsable as ResponsableTipo } },
+      })
     }
 
-    // Filtro período: para 2022-2023 incluir también obras sin periodo (antiguas)
+    // Filtro período: 2022-2023 incluye obras con ese periodo o sin periodo (creadas antes del campo)
     if (periodo) {
       if (periodo === "PERIODO_2022_2023") {
-        where.periodo = { in: [periodo as PeriodoAuditoria, null] }
+        andConditions.push({
+          OR: [
+            { periodo: periodo as PeriodoAuditoria },
+            { periodo: null },
+          ],
+        })
       } else {
-        where.periodo = periodo as PeriodoAuditoria
+        andConditions.push({ periodo: periodo as PeriodoAuditoria })
       }
     }
 
-    // Filtro tipo de obra (solo aplica a obras del período 2023-2024)
     if (tipoObraAuditoria) {
-      where.tipoObraAuditoria = tipoObraAuditoria as TipoObraAuditoria
+      andConditions.push({ tipoObraAuditoria: tipoObraAuditoria as TipoObraAuditoria })
     }
+
+    const where = andConditions.length === 1 ? andConditions[0] : { AND: andConditions }
 
     const page = parseInt(searchParams.get("page") || "1")
     const limit = parseInt(searchParams.get("limit") || "10")
