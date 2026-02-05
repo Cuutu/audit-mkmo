@@ -13,18 +13,19 @@ export async function GET(request: NextRequest) {
     }
 
     const searchParams = request.nextUrl.searchParams
-    const search = searchParams.get("search")
-    const año = searchParams.get("ano")
-    const mes = searchParams.get("mes")
-    const estado = searchParams.get("estado")
-    const responsable = searchParams.get("responsable")
-    const periodo = searchParams.get("periodo")
-    const tipoObraAuditoria = searchParams.get("tipoObraAuditoria")
+    const search = searchParams.get("search")?.trim() || null
+    const añoParam = searchParams.get("ano")
+    const mesParam = searchParams.get("mes")
+    const estado = searchParams.get("estado") || null
+    const responsable = searchParams.get("responsable") || null
+    const periodo = searchParams.get("periodo") || null
+    const tipoObraAuditoria = searchParams.get("tipoObraAuditoria") || null
 
     const where: any = {
       deleted: false,
     }
 
+    // Búsqueda por texto (número o nombre)
     if (search) {
       where.OR = [
         { numero: { contains: search, mode: "insensitive" } },
@@ -32,12 +33,20 @@ export async function GET(request: NextRequest) {
       ]
     }
 
-    if (año) {
-      where.ano = parseInt(año)
+    // Filtro año: solo si es un número válido
+    if (añoParam) {
+      const anoNum = parseInt(añoParam, 10)
+      if (!Number.isNaN(anoNum)) {
+        where.ano = anoNum
+      }
     }
 
-    if (mes) {
-      where.mes = parseInt(mes)
+    // Filtro mes: solo si es un número válido (1-12)
+    if (mesParam) {
+      const mesNum = parseInt(mesParam, 10)
+      if (!Number.isNaN(mesNum) && mesNum >= 1 && mesNum <= 12) {
+        where.mes = mesNum
+      }
     }
 
     if (estado) {
@@ -47,17 +56,23 @@ export async function GET(request: NextRequest) {
     if (responsable) {
       where.procesos = {
         some: {
-          responsable: responsable as any,
+          responsable: responsable as ResponsableTipo,
         },
       }
     }
 
+    // Filtro período: para 2022-2023 incluir también obras sin periodo (antiguas)
     if (periodo) {
-      where.periodo = periodo
+      if (periodo === "PERIODO_2022_2023") {
+        where.periodo = { in: [periodo as PeriodoAuditoria, null] }
+      } else {
+        where.periodo = periodo as PeriodoAuditoria
+      }
     }
 
+    // Filtro tipo de obra (solo aplica a obras del período 2023-2024)
     if (tipoObraAuditoria) {
-      where.tipoObraAuditoria = tipoObraAuditoria
+      where.tipoObraAuditoria = tipoObraAuditoria as TipoObraAuditoria
     }
 
     const page = parseInt(searchParams.get("page") || "1")
