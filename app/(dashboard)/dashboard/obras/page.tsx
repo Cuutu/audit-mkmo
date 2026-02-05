@@ -11,7 +11,7 @@ import { Obra } from "@prisma/client"
 import { Pagination } from "@/components/ui/pagination"
 import { useDebounce } from "@/lib/hooks/use-debounce"
 import { ObraListSkeleton } from "@/components/ui/skeleton"
-import { PERIODOS_OPTIONS, PERIODOS, TIPOS_OBRA_AUDITORIA } from "@/lib/periodos-config"
+import { PERIODOS_OPTIONS, PERIODOS, TIPOS_OBRA_AUDITORIA, TIPOS_OBRA } from "@/lib/periodos-config"
 
 interface ObraWithProgress extends Obra {
   avance: number
@@ -202,6 +202,7 @@ export default function ObrasPage() {
               {obras.map((obra) => {
                 const periodoInfo = obra.periodo ? PERIODOS[obra.periodo as keyof typeof PERIODOS] : null
                 const tipoObraInfo = obra.tipoObraAuditoria ? TIPOS_OBRA_AUDITORIA[obra.tipoObraAuditoria as keyof typeof TIPOS_OBRA_AUDITORIA] : null
+                const tipoObraEspecificoInfo = obra.tipoObra ? TIPOS_OBRA[obra.tipoObra as keyof typeof TIPOS_OBRA] : null
                 const numProcesos = obra.procesos?.length || (obra.periodo === "PERIODO_2022_2023" ? 8 : 4)
                 
                 return (
@@ -235,6 +236,11 @@ export default function ObrasPage() {
                                   : "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300"
                               }`}>
                                 {tipoObraInfo.nombre.replace("Obra ", "")}
+                              </span>
+                            )}
+                            {tipoObraEspecificoInfo && (
+                              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300">
+                                {tipoObraEspecificoInfo.nombre}
                               </span>
                             )}
                           </div>

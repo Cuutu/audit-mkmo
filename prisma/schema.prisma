@@ -28,6 +28,15 @@ enum TipoObraAuditoria {
   EN_EJECUCION
 }
 
+enum TipoObra {
+  REMODELACIONES_READEQUACIONES_SET
+  LINEAS_AEREAS_BAJA_TENSION
+  SUB_ESTACIONES_TRANSFORMADORAS
+  REDES_ALUMBRADO_PUBLICO
+  ESTACIONES_TRANSFORMADORAS_33KV
+  OBRAS_CIVILES
+}
+
 enum PeriodoAuditoria {
   PERIODO_2022_2023   // 1 Jun 2022 - 31 May 2023 (Procesos 1-8)
   PERIODO_2023_2024   // 1 Jun 2023 - 31 May 2024 (Procesos 9-16)
@@ -86,6 +95,7 @@ model Obra {
   estado            ObraEstado          @default(NO_INICIADA)
   periodo           PeriodoAuditoria    @default(PERIODO_2022_2023)
   tipoObraAuditoria TipoObraAuditoria?  // Solo para períodos 2023-2024 y 2024-2025
+  tipoObra          TipoObra?           // Tipo específico de obra (Remodelaciones, Líneas Aéreas, etc.)
   observaciones     String?
   avance            Int                 @default(0) // 0-100
   // Campos adicionales para procesos 9-16
@@ -112,6 +122,7 @@ model Obra {
   @@index([numero, deleted])
   @@index([periodo])
   @@index([tipoObraAuditoria])
+  @@index([tipoObra])
   @@map("obras")
 }
 

@@ -181,3 +181,46 @@ export const TIPOS_OBRA_OPTIONS = Object.values(TIPOS_OBRA_AUDITORIA).map(t => (
   label: t.nombre,
   descripcion: t.descripcion,
 }))
+
+// Definición de tipos de obra específicos
+export const TIPOS_OBRA = {
+  REMODELACIONES_READEQUACIONES_SET: {
+    id: "REMODELACIONES_READEQUACIONES_SET",
+    nombre: "Remodelaciones y readecuaciones de Ambitos, transferencias de cargas, nexos subterraneos y aereos en Instalación de Lineas de MediaTensión/Baja Tensión y SET",
+    descripcion: "Remodelaciones y readecuaciones de Ambitos, transferencias de cargas, nexos subterraneos y aereos en Instalación de Lineas de MediaTensión/Baja Tensión y SET",
+  },
+  LINEAS_AEREAS_BAJA_TENSION: {
+    id: "LINEAS_AEREAS_BAJA_TENSION",
+    nombre: "Lineas Aereas de Baja Tensión y Pilares de Medición",
+    descripcion: "Lineas Aereas de Baja Tensión y Pilares de Medición",
+  },
+  SUB_ESTACIONES_TRANSFORMADORAS: {
+    id: "SUB_ESTACIONES_TRANSFORMADORAS",
+    nombre: "Instalación de Sub Estaciones Transformadoras",
+    descripcion: "Instalación de Sub Estaciones Transformadoras",
+  },
+  REDES_ALUMBRADO_PUBLICO: {
+    id: "REDES_ALUMBRADO_PUBLICO",
+    nombre: "Redes de Alumbrado Público",
+    descripcion: "Redes de Alumbrado Público",
+  },
+  ESTACIONES_TRANSFORMADORAS_33KV: {
+    id: "ESTACIONES_TRANSFORMADORAS_33KV",
+    nombre: "Estaciones Trasnformadoras 33 KV- 13.2KV",
+    descripcion: "Estaciones Trasnformadoras 33 KV- 13.2KV",
+  },
+  OBRAS_CIVILES: {
+    id: "OBRAS_CIVILES",
+    nombre: "Obras Civiles",
+    descripcion: "Obras Civiles",
+  },
+} as const
+
+export type TipoObraId = keyof typeof TIPOS_OBRA
+
+// Lista de opciones para el selector de tipo de obra específico
+export const TIPOS_OBRA_ESPECIFICOS_OPTIONS = Object.values(TIPOS_OBRA).map(t => ({
+  value: t.id,
+  label: t.nombre,
+  descripcion: t.descripcion,
+}))

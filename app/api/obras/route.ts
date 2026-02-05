@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
-import { ResponsableTipo, PeriodoAuditoria, TipoObraAuditoria } from "@prisma/client"
+import { ResponsableTipo, PeriodoAuditoria, TipoObraAuditoria, TipoObra } from "@prisma/client"
 import { getProcesosParaObra, PeriodoId, TipoObraAuditoriaId } from "@/lib/periodos-config"
 
 export async function GET(request: NextRequest) {
@@ -217,7 +217,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { numero, nombre, ano, mes, observaciones, estado, periodo, tipoObraAuditoria } = body
+    const { numero, nombre, ano, mes, observaciones, estado, periodo, tipoObraAuditoria, tipoObra } = body
 
     // Validar período
     const periodoValido = ["PERIODO_2022_2023", "PERIODO_2023_2024"].includes(periodo)
@@ -269,6 +269,7 @@ export async function POST(request: NextRequest) {
         estado: estado || "NO_INICIADA",
         periodo: periodo as PeriodoAuditoria,
         tipoObraAuditoria: tipoObraAuditoria ? (tipoObraAuditoria as TipoObraAuditoria) : null,
+        tipoObra: tipoObra ? (tipoObra as TipoObra) : null,
         createdById: session.user.id,
       },
     })

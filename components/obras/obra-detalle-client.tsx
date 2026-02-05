@@ -10,7 +10,7 @@ import { ProcesoTabs } from "@/components/obras/proceso-tabs"
 import { ArrowLeft, Edit, Trash2, Calendar, Building2 } from "lucide-react"
 import Link from "next/link"
 import { Obra, Proceso, User, ObraEstado, PeriodoAuditoria, TipoObraAuditoria } from "@prisma/client"
-import { PERIODOS, TIPOS_OBRA_AUDITORIA } from "@/lib/periodos-config"
+import { PERIODOS, TIPOS_OBRA_AUDITORIA, TIPOS_OBRA } from "@/lib/periodos-config"
 
 type ObraWithRelations = Obra & {
   procesos: (Proceso & {
@@ -80,6 +80,7 @@ export function ObraDetalleClient({ obra }: ObraDetalleClientProps) {
   // Obtener información del período
   const periodoInfo = obra.periodo ? PERIODOS[obra.periodo as keyof typeof PERIODOS] : null
   const tipoObraInfo = obra.tipoObraAuditoria ? TIPOS_OBRA_AUDITORIA[obra.tipoObraAuditoria as keyof typeof TIPOS_OBRA_AUDITORIA] : null
+  const tipoObraEspecificoInfo = obra.tipoObra ? TIPOS_OBRA[obra.tipoObra as keyof typeof TIPOS_OBRA] : null
 
   return (
     <div className="space-y-6">
@@ -114,6 +115,12 @@ export function ObraDetalleClient({ obra }: ObraDetalleClientProps) {
                 }`}>
                   <Building2 className="h-3 w-3" />
                   {tipoObraInfo.nombre}
+                </span>
+              )}
+              {tipoObraEspecificoInfo && (
+                <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300">
+                  <Building2 className="h-3 w-3" />
+                  {tipoObraEspecificoInfo.nombre}
                 </span>
               )}
             </div>

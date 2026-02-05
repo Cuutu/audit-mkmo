@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { createAuditLog } from "@/lib/audit"
+import { TipoObra } from "@prisma/client"
 
 export async function GET(
   request: NextRequest,
@@ -101,7 +102,7 @@ export async function PUT(
       return NextResponse.json({ message: "Obra restaurada correctamente" })
     }
 
-    const { numero, nombre, ano, mes, observaciones, estado } = body
+    const { numero, nombre, ano, mes, observaciones, estado, tipoObra } = body
 
     // Obtener obra actual para comparar cambios
     const obraActual = await prisma.obra.findUnique({
@@ -140,6 +141,7 @@ export async function PUT(
         mes: parseInt(mes),
         observaciones,
         estado: estado as typeof obraActual.estado,
+        tipoObra: tipoObra ? (tipoObra as TipoObra) : null,
       },
     })
 
@@ -151,6 +153,11 @@ export async function PUT(
     if (obraActual.mes !== parseInt(mes)) cambios.push(`Mes: ${obraActual.mes} → ${mes}`)
     if (obraActual.estado !== estado) cambios.push(`Estado: ${obraActual.estado} → ${estado}`)
     if (obraActual.observaciones !== observaciones) cambios.push("Observaciones modificadas")
+    if (obraActual.tipoObra !== (tipoObra || null)) {
+      const tipoAnterior = obraActual.tipoObra || "Sin tipo"
+      const tipoNuevo = tipoObra || "Sin tipo"
+      cambios.push(`Tipo de obra: ${tipoAnterior} → ${tipoNuevo}`)
+    }
 
     if (cambios.length > 0) {
       await createAuditLog({
