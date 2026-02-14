@@ -12,7 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { ArrowLeft, Info, Calendar, Building2 } from "lucide-react"
 import Link from "next/link"
 import { FileUpload } from "@/components/ui/file-upload"
-import { PERIODOS_OPTIONS, TIPOS_OBRA_OPTIONS, TIPOS_OBRA_ESPECIFICOS_OPTIONS, periodoRequiereTipoObra, getPeriodoInfo, PERIODOS } from "@/lib/periodos-config"
+import { PERIODOS_OPTIONS, TIPOS_OBRA_OPTIONS, periodoRequiereTipoObra, getPeriodoInfo, PERIODOS } from "@/lib/periodos-config"
 
 const obraSchema = z.object({
   numero: z.string().min(1, "El número es requerido"),
@@ -23,14 +23,6 @@ const obraSchema = z.object({
   estado: z.enum(["NO_INICIADA", "EN_PROCESO", "FINALIZADA"]).default("NO_INICIADA"),
   periodo: z.enum(["PERIODO_2022_2023", "PERIODO_2023_2024", "PERIODO_2024_2025"]),
   tipoObraAuditoria: z.enum(["TERMINADA", "EN_EJECUCION"]).optional(),
-  tipoObra: z.enum([
-    "REMODELACIONES_READEQUACIONES_SET",
-    "LINEAS_AEREAS_BAJA_TENSION",
-    "SUB_ESTACIONES_TRANSFORMADORAS",
-    "REDES_ALUMBRADO_PUBLICO",
-    "ESTACIONES_TRANSFORMADORAS_33KV",
-    "OBRAS_CIVILES",
-  ]).optional(),
 }).refine((data) => {
   // Validar que el período esté habilitado
   if (data.periodo === "PERIODO_2024_2025") {
@@ -126,7 +118,6 @@ export default function NuevaObraPage() {
   }, [requiereTipoObra, setValue, selectedPeriodo, añosDisponibles, selectedAno, selectedMes, mesesDisponibles])
 
   const onSubmit = async (data: ObraFormData) => {
-    const { tipoObra, ...restData } = data
     setLoading(true)
     setError("")
 
@@ -274,26 +265,6 @@ export default function NuevaObraPage() {
                       <p className="text-sm text-red-600">{errors.tipoObraAuditoria.message}</p>
                     )}
                   </div>
-                )}
-              </div>
-
-              {/* Tipo de obra específico - disponible para todos los períodos */}
-              <div className="space-y-2">
-                <Label htmlFor="tipoObra">Tipo de Obra</Label>
-                <select
-                  id="tipoObra"
-                  {...register("tipoObra")}
-                  className="h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                >
-                  <option value="">Seleccione tipo de obra (opcional)</option>
-                  {TIPOS_OBRA_ESPECIFICOS_OPTIONS.map((tipo) => (
-                    <option key={tipo.value} value={tipo.value}>
-                      {tipo.label}
-                    </option>
-                  ))}
-                </select>
-                {errors.tipoObra && (
-                  <p className="text-sm text-red-600">{errors.tipoObra.message}</p>
                 )}
               </div>
 

@@ -1,5 +1,10 @@
 // Definición de campos estructurados por proceso
 
+import { TIPOS_OBRA } from "@/lib/periodos-config"
+
+// Opciones de Tipo de Obra para proceso 1 (solo aparece aquí, no al crear obra)
+const TIPOS_OBRA_PROCESO_1 = Object.values(TIPOS_OBRA).map((t) => t.nombre)
+
 export interface CampoProceso {
   id: string
   nombre: string
@@ -30,7 +35,7 @@ export const camposPorProceso: Record<number, CampoProceso[]> = {
       tipo: "select",
       label: "Tipo de Obra",
       requerido: true,
-      opciones: ["Infraestructura", "Edificación", "Obra Civil", "Otro"],
+      opciones: TIPOS_OBRA_PROCESO_1,
     },
     {
       id: "ubicacion",
