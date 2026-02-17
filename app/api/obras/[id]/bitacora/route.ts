@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { requireObjectId } from "@/lib/validators"
 
 export async function GET(
   request: NextRequest,
@@ -13,9 +14,12 @@ export async function GET(
       return NextResponse.json({ error: "No autorizado" }, { status: 401 })
     }
 
+    const idErr = requireObjectId(params.id)
+    if (idErr) return idErr
+
     const { searchParams } = new URL(request.url)
-    const page = parseInt(searchParams.get("page") || "1")
-    const limit = parseInt(searchParams.get("limit") || "50")
+    const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10) || 1)
+    const limit = Math.min(100, Math.max(1, parseInt(searchParams.get("limit") || "50", 10) || 50))
     const skip = (page - 1) * limit
 
     const [logs, total] = await Promise.all([

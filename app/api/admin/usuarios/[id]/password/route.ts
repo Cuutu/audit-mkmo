@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
 import { createAuditLog } from "@/lib/audit"
+import { requireObjectId } from "@/lib/validators"
 
 export async function PATCH(
   request: NextRequest,
@@ -15,7 +16,10 @@ export async function PATCH(
       return NextResponse.json({ error: "No autorizado" }, { status: 401 })
     }
 
-    const body = await request.json()
+    const idErr = requireObjectId(params.id)
+    if (idErr) return idErr
+
+    const body = await request.json().catch(() => ({}))
     const { password } = body
 
     if (!password || password.length < 6) {

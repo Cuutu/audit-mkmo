@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { requireObjectId, safeContentDispositionFilename } from "@/lib/validators"
+import { checkArchivoAccess } from "@/lib/permissions"
 
 export async function GET(
   request: NextRequest,
@@ -13,16 +15,12 @@ export async function GET(
       return NextResponse.json({ error: "No autorizado" }, { status: 401 })
     }
 
-    const archivo = await prisma.archivo.findUnique({
-      where: { id: params.id, deleted: false },
-      include: {
-        obra: {
-          select: { id: true, numero: true },
-        },
-      },
-    })
+    const idError = requireObjectId(params.id)
+    if (idError) return idError
 
-    if (!archivo) {
+    const { archivo, error: accessError } = await checkArchivoAccess(params.id, session)
+    if (accessError) return accessError
+    if (!archivo || archivo.deleted) {
       return NextResponse.json({ error: "Archivo no encontrado" }, { status: 404 })
     }
 
@@ -51,11 +49,12 @@ export async function GET(
 
     const fileBuffer = await response.arrayBuffer()
 
-    // Retornar el archivo
+    const safeFilename = safeContentDispositionFilename(archivo.nombreOriginal)
+
     return new NextResponse(fileBuffer, {
       headers: {
         "Content-Type": archivo.tipo,
-        "Content-Disposition": `attachment; filename="${archivo.nombreOriginal}"`,
+        "Content-Disposition": `attachment; filename="${safeFilename}"`,
         "Content-Length": archivo.tamano.toString(),
       },
     })

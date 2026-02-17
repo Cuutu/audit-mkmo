@@ -13,6 +13,7 @@ export async function GET(request: NextRequest) {
 
     const parametros = await prisma.parametro.findMany({
       orderBy: [{ categoria: "asc" }, { clave: "asc" }],
+      take: 200,
     })
 
     return NextResponse.json(parametros)

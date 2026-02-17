@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { createAuditLog } from "@/lib/audit"
 import { TipoObra } from "@prisma/client"
+import { requireObjectId } from "@/lib/validators"
 
 export async function GET(
   request: NextRequest,
@@ -14,6 +15,9 @@ export async function GET(
     if (!session) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 })
     }
+
+    const idErr = requireObjectId(params.id)
+    if (idErr) return idErr
 
     const obra = await prisma.obra.findUnique({
       where: { id: params.id, deleted: false },
@@ -50,6 +54,9 @@ export async function PUT(
     if (!session) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 })
     }
+
+    const idErr = requireObjectId(params.id)
+    if (idErr) return idErr
 
     const body = await request.json().catch(() => ({}))
     
@@ -192,7 +199,9 @@ export async function DELETE(
       return NextResponse.json({ error: "No autorizado" }, { status: 401 })
     }
 
-    // Solo admin puede eliminar
+    const idErr = requireObjectId(params.id)
+    if (idErr) return idErr
+
     if (session.user.role !== "ADMIN") {
       return NextResponse.json(
         { error: "Solo los administradores pueden eliminar obras" },
@@ -200,7 +209,6 @@ export async function DELETE(
       )
     }
 
-    // Buscar obra (eliminada o no)
     const obra = await prisma.obra.findUnique({
       where: { id: params.id },
       include: {

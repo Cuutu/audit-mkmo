@@ -13,6 +13,7 @@ export async function GET(request: NextRequest) {
 
     const plantillas = await prisma.checklistTemplate.findMany({
       orderBy: [{ procesoNumero: "asc" }, { nombre: "asc" }],
+      take: 200,
     })
 
     return NextResponse.json(plantillas)

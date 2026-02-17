@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { createAuditLog } from "@/lib/audit"
 import { generarExcelGlobal } from "@/lib/reportes/excel-generator"
+import { safeContentDispositionFilename } from "@/lib/validators"
 import * as XLSX from "xlsx"
 
 export const dynamic = 'force-dynamic'
@@ -48,8 +49,11 @@ export async function GET(request: NextRequest) {
     
     if (estado) where.estado = estado
 
+    // Límite para evitar OOM con muchos registros
+    const MAX_OBRAS_REPORTE = 1000
     const obras = await prisma.obra.findMany({
       where,
+      take: MAX_OBRAS_REPORTE,
       include: {
         procesos: {
           orderBy: { numero: "asc" },
@@ -87,14 +91,14 @@ export async function GET(request: NextRequest) {
     const workbook = generarExcelGlobal(obras)
     const excelBuffer = XLSX.write(workbook, { type: "buffer", bookType: "xlsx" })
 
-    const nombreMes = mes || "todos"
-    const nombreArchivo = `reporte-global-${ano || "todos"}-mes-${nombreMes}-${estado || "todos"}.xlsx`
+    const nombreArchivo = `reporte-global-${ano || "todos"}-mes-${mes || "todos"}-${estado || "todos"}.xlsx`
+    const safeFilename = safeContentDispositionFilename(nombreArchivo)
 
     return new NextResponse(excelBuffer, {
       headers: {
         "Content-Type":
           "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        "Content-Disposition": `attachment; filename="${nombreArchivo}"`,
+        "Content-Disposition": `attachment; filename="${safeFilename}"`,
       },
     })
   } catch (error) {

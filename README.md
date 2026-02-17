@@ -32,9 +32,10 @@ npm install
 cp .env.example .env
 ```
 
-Editar `.env` y configurar:
+Editar `.env` y configurar (ver `.env.example` como referencia):
 - `DATABASE_URL` - URL de conexión a MongoDB (ej: `mongodb://localhost:27017/auditoria_obras`)
 - `NEXTAUTH_SECRET` - Generar con: `openssl rand -base64 32`
+- `SEED_ADMIN_EMAIL` y `SEED_ADMIN_PASSWORD` - Requeridos para `npm run db:seed`
 
 3. **Configurar base de datos:**
 ```bash

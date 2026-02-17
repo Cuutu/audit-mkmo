@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
 import { Role } from "@prisma/client"
 import { createAuditLog } from "@/lib/audit"
+import { requireObjectId } from "@/lib/validators"
 
 export async function PUT(
   request: NextRequest,
@@ -16,7 +17,10 @@ export async function PUT(
       return NextResponse.json({ error: "No autorizado" }, { status: 401 })
     }
 
-    const body = await request.json()
+    const idErr = requireObjectId(params.id)
+    if (idErr) return idErr
+
+    const body = await request.json().catch(() => ({}))
     const { email, name, password, role } = body
 
     const usuarioAnterior = await prisma.user.findUnique({
@@ -74,6 +78,9 @@ export async function DELETE(
     if (!session || session.user.role !== "ADMIN") {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 })
     }
+
+    const idErr = requireObjectId(params.id)
+    if (idErr) return idErr
 
     const usuario = await prisma.user.findUnique({
       where: { id: params.id },

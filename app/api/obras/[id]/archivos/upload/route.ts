@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { saveFile, isAllowedFileType } from "@/lib/file-upload"
+import { requireObjectId, isMongoObjectId } from "@/lib/validators"
 import { createAuditLog } from "@/lib/audit"
 import { ResponsableTipo, Role } from "@prisma/client"
 
@@ -57,6 +58,13 @@ export async function POST(
         { error: "Tipo de archivo no permitido" },
         { status: 400 }
       )
+    }
+
+    const idErr = requireObjectId(params.id)
+    if (idErr) return idErr
+
+    if (procesoId && !isMongoObjectId(procesoId)) {
+      return NextResponse.json({ error: "ID de proceso inválido" }, { status: 400 })
     }
 
     // Verificar que la obra existe

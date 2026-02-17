@@ -15,6 +15,7 @@ export async function GET(request: NextRequest) {
 
     const usuarios = await prisma.user.findMany({
       orderBy: { createdAt: "desc" },
+      take: 500,
       select: {
         id: true,
         email: true,
@@ -44,6 +45,14 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json()
     const { email, name, password, role } = body
+
+    const validRoles = ["ADMIN", "ENGINEER", "ACCOUNTANT", "VIEWER"]
+    if (role && !validRoles.includes(role)) {
+      return NextResponse.json(
+        { error: "Rol inválido" },
+        { status: 400 }
+      )
+    }
 
     if (!email || !name || !password) {
       return NextResponse.json(

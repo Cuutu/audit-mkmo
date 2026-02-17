@@ -4,11 +4,22 @@ import bcrypt from "bcryptjs"
 const prisma = new PrismaClient()
 
 async function main() {
+  if (process.env.NODE_ENV === "production") {
+    throw new Error(
+      "No se puede ejecutar seed en producción. Use migraciones o scripts específicos."
+    )
+  }
+
   console.log("🌱 Iniciando seed...")
 
-  // Crear usuario admin por defecto
-  const adminEmail = "admin@auditoria.com"
-  const adminPassword = "admin123" // Cambiar en producción
+  const adminEmail = process.env.SEED_ADMIN_EMAIL
+  const adminPassword = process.env.SEED_ADMIN_PASSWORD
+
+  if (!adminEmail || !adminPassword) {
+    throw new Error(
+      "SEED_ADMIN_EMAIL y SEED_ADMIN_PASSWORD son requeridos. Definirlos en .env"
+    )
+  }
 
   const existingAdmin = await prisma.user.findUnique({
     where: { email: adminEmail },
@@ -26,10 +37,7 @@ async function main() {
       },
     })
 
-    console.log("✅ Usuario admin creado:")
-    console.log(`   Email: ${adminEmail}`)
-    console.log(`   Password: ${adminPassword}`)
-    console.log("   ⚠️  IMPORTANTE: Cambiar la contraseña después del primer login")
+    console.log("✅ Usuario admin creado:", adminEmail)
   } else {
     console.log("ℹ️  Usuario admin ya existe")
   }

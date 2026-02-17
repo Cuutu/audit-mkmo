@@ -79,13 +79,8 @@ export async function GET(request: NextRequest) {
       where = baseConditions
     }
 
-    // Log para depuración
-    console.log("🔍 Filtro período:", periodo)
-    console.log("🔍 Necesita consulta especial:", needsSpecialPeriodQuery)
-    console.log("🔍 Where construido:", JSON.stringify(where, null, 2))
-
-    const page = parseInt(searchParams.get("page") || "1")
-    const limit = parseInt(searchParams.get("limit") || "10")
+    const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10) || 1)
+    const limit = Math.min(100, Math.max(1, parseInt(searchParams.get("limit") || "10", 10) || 10))
     const skip = (page - 1) * limit
 
     let obras: any[]
@@ -109,6 +104,7 @@ export async function GET(request: NextRequest) {
       const [obrasConPeriodo, todasLasObrasSinFiltroPeriodo, totalConPeriodo] = await Promise.all([
         prisma.obra.findMany({
           where: whereConPeriodo,
+          take: 2000,
           include: {
             procesos: {
               select: {
@@ -130,6 +126,7 @@ export async function GET(request: NextRequest) {
         // Consulta sin filtro de período para obtener obras antiguas
         prisma.obra.findMany({
           where: whereSinPeriodoFiltro,
+          take: 2000,
           include: {
             procesos: {
               select: {

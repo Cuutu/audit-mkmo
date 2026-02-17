@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { requireObjectId } from "@/lib/validators"
+import { checkArchivoAccess } from "@/lib/permissions"
 
 export async function GET(
   request: NextRequest,
@@ -13,9 +15,12 @@ export async function GET(
       return NextResponse.json({ error: "No autorizado" }, { status: 401 })
     }
 
-    const archivoActual = await prisma.archivo.findUnique({
-      where: { id: params.id },
-    })
+    const idError = requireObjectId(params.id)
+    if (idError) return idError
+
+    const { archivo: archivoCheck, error: accessError } = await checkArchivoAccess(params.id, session)
+    if (accessError) return accessError
+    const archivoActual = archivoCheck
 
     if (!archivoActual) {
       return NextResponse.json({ error: "Archivo no encontrado" }, { status: 404 })

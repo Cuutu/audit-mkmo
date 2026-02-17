@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { ProcesoEstado, ResponsableTipo, Role } from "@prisma/client"
+import { requireObjectId } from "@/lib/validators"
 
 // Función helper para verificar permisos según el rol del usuario y el responsable del proceso
 function canModifyProcess(userRole: Role, procesoResponsable: ResponsableTipo): boolean {
@@ -39,7 +40,10 @@ export async function PATCH(
       return NextResponse.json({ error: "No autorizado" }, { status: 401 })
     }
 
-    const body = await request.json()
+    const idErr = requireObjectId(params.id)
+    if (idErr) return idErr
+
+    const body = await request.json().catch(() => ({}))
     const { estado, avance, observaciones, checklist, datos } = body
 
     const proceso = await prisma.proceso.findUnique({

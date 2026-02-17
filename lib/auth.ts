@@ -5,6 +5,7 @@ import CredentialsProvider from "next-auth/providers/credentials"
 import { prisma } from "./prisma"
 import bcrypt from "bcryptjs"
 import { Role } from "@prisma/client"
+import { checkRateLimit } from "./rate-limit"
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -14,10 +15,18 @@ export const authOptions: NextAuthOptions = {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
-      async authorize(credentials) {
+      async authorize(credentials, req) {
         if (!credentials?.email || !credentials?.password) {
-          console.log("❌ Credenciales faltantes")
           return null
+        }
+
+        const ip =
+          (req as any)?.headers?.get?.("x-forwarded-for")?.split(",")[0]?.trim() ||
+          (req as any)?.headers?.get?.("x-real-ip") ||
+          credentials.email
+        const rl = checkRateLimit(ip, "login")
+        if (!rl.success) {
+          return null // No revelar que es rate limit (mismo comportamiento que credenciales inválidas)
         }
 
         try {
@@ -26,7 +35,6 @@ export const authOptions: NextAuthOptions = {
           })
 
           if (!user) {
-            console.log(`❌ Usuario no encontrado: ${credentials.email}`)
             return null
           }
 
@@ -36,11 +44,8 @@ export const authOptions: NextAuthOptions = {
           )
 
           if (!isPasswordValid) {
-            console.log("❌ Contraseña inválida")
             return null
           }
-
-          console.log(`✅ Login exitoso: ${user.email}`)
 
           return {
             id: user.id,

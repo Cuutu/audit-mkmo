@@ -4,6 +4,8 @@ import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { createAuditLog } from "@/lib/audit"
 import { deleteFile } from "@/lib/file-upload"
+import { requireObjectId } from "@/lib/validators"
+import { checkArchivoAccess } from "@/lib/permissions"
 
 export async function DELETE(
   request: NextRequest,
@@ -15,11 +17,12 @@ export async function DELETE(
       return NextResponse.json({ error: "No autorizado" }, { status: 401 })
     }
 
-    const archivo = await prisma.archivo.findUnique({
-      where: { id: params.id, deleted: false },
-    })
+    const idError = requireObjectId(params.id)
+    if (idError) return idError
 
-    if (!archivo) {
+    const { archivo, error: accessError } = await checkArchivoAccess(params.id, session)
+    if (accessError) return accessError
+    if (!archivo || archivo.deleted) {
       return NextResponse.json({ error: "Archivo no encontrado" }, { status: 404 })
     }
 
@@ -64,16 +67,18 @@ export async function PATCH(
       return NextResponse.json({ error: "No autorizado" }, { status: 401 })
     }
 
-    const body = await request.json()
+    const idError = requireObjectId(params.id)
+    if (idError) return idError
+
+    const body = await request.json().catch(() => ({}))
     const { action } = body
 
     if (action === "restore") {
-      // Restaurar archivo
-      const archivo = await prisma.archivo.findUnique({
-        where: { id: params.id, deleted: true },
-      })
+      const { archivo, error: accessError } = await checkArchivoAccess(params.id, session)
+      if (accessError) return accessError
+      const archivoDeleted = archivo?.deleted ? archivo : null
 
-      if (!archivo) {
+      if (!archivoDeleted) {
         return NextResponse.json({ error: "Archivo no encontrado" }, { status: 404 })
       }
 
@@ -89,16 +94,15 @@ export async function PATCH(
       await createAuditLog({
         accion: "RESTORE",
         entidad: "Archivo",
-        entidadId: archivo.id,
+        entidadId: archivoDeleted.id,
         userId: session.user.id,
-        obraId: archivo.obraId || undefined,
-        procesoId: archivo.procesoId || undefined,
-        archivoId: archivo.id,
+        obraId: archivoDeleted.obraId || undefined,
+        procesoId: archivoDeleted.procesoId || undefined,
+        archivoId: archivoDeleted.id,
       })
 
       return NextResponse.json({ message: "Archivo restaurado correctamente" })
     } else if (action === "permanent-delete") {
-      // Eliminar definitivamente (solo Admin)
       if (session.user.role !== "ADMIN") {
         return NextResponse.json(
           { error: "Solo los administradores pueden eliminar archivos definitivamente" },
@@ -106,9 +110,9 @@ export async function PATCH(
         )
       }
 
-      const archivo = await prisma.archivo.findUnique({
-        where: { id: params.id, deleted: true },
-      })
+      const { archivo: archivoPerm, error: accessErrorPerm } = await checkArchivoAccess(params.id, session)
+      if (accessErrorPerm) return accessErrorPerm
+      const archivo = archivoPerm?.deleted ? archivoPerm : null
 
       if (!archivo) {
         return NextResponse.json({ error: "Archivo no encontrado" }, { status: 404 })
