@@ -215,9 +215,10 @@ export function ProcesoDetalleClient({ obra, proceso, userRole }: ProcesoDetalle
         </div>
       </div>
 
-      {/* Información de Objetivo y Evidencia para procesos 9-16 */}
-      {proceso.numero >= 9 && proceso.numero <= 16 && (() => {
-        const infoProceso = getInfoProceso(proceso.numero)
+      {/* Información de Objetivo y Evidencia (procesos 1-16) */}
+      {(() => {
+        const infoProceso = getInfoProceso(proceso.numero, obra)
+        if (!infoProceso) return null
         if (!infoProceso) return null
         return (
           <Card className="border-blue-200 bg-blue-50/50 dark:bg-blue-950/20">

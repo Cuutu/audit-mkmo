@@ -38,9 +38,9 @@ enum TipoObra {
 }
 
 enum PeriodoAuditoria {
-  PERIODO_2022_2023   // 1 Jun 2022 - 31 May 2023 (Procesos 1-8)
-  PERIODO_2023_2024   // 1 Jun 2023 - 31 May 2024 (Procesos 9-16)
-  PERIODO_2024_2025   // 1 Jun 2024 - 31 May 2025 (Procesos 9-16)
+  PERIODO_2022_2023   // 1 Jun 2022 - 30 Jun 2023 (Procesos 1-12 según tipo obra)
+  PERIODO_2023_2024   // 1 Jun 2023 - 31 May 2024 (Procesos 9-16 según tipo obra)
+  PERIODO_2024_2025   // 1 Jun 2024 - 31 May 2025 (Procesos 9-16 según tipo obra)
 }
 
 enum ProcesoEstado {
@@ -130,7 +130,7 @@ model Proceso {
   id                    String          @id @default(auto()) @map("_id") @db.ObjectId
   obraId                String          @db.ObjectId
   obra                  Obra            @relation(fields: [obraId], references: [id])
-  numero                Int             // 1-8 para período 2022-2023, 9-16 para períodos 2023-2024 y 2024-2025
+  numero                Int             // 1-12 período 2022-2023, 9-16 períodos 2023-2024 y 2024-2025
   nombre                String
   estado                ProcesoEstado   @default(NO_INICIADO)
   responsable           ResponsableTipo

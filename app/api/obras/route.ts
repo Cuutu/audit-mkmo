@@ -228,8 +228,11 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Validar que si el período es 2023-2024, se debe proporcionar tipoObraAuditoria
-    if (periodo === "PERIODO_2023_2024" && !tipoObraAuditoria) {
+    // Validar tipo de obra para períodos que lo requieren (2022-2023 y 2023-2024)
+    if (
+      (periodo === "PERIODO_2022_2023" || periodo === "PERIODO_2023_2024") &&
+      !tipoObraAuditoria
+    ) {
       return NextResponse.json(
         { error: "El tipo de obra es requerido para el período seleccionado" },
         { status: 400 }

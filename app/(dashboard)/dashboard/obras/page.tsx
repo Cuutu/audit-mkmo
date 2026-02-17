@@ -203,7 +203,7 @@ export default function ObrasPage() {
                 const periodoInfo = obra.periodo ? PERIODOS[obra.periodo as keyof typeof PERIODOS] : null
                 const tipoObraInfo = obra.tipoObraAuditoria ? TIPOS_OBRA_AUDITORIA[obra.tipoObraAuditoria as keyof typeof TIPOS_OBRA_AUDITORIA] : null
                 const tipoObraEspecificoInfo = obra.tipoObra ? TIPOS_OBRA[obra.tipoObra as keyof typeof TIPOS_OBRA] : null
-                const numProcesos = obra.procesos?.length || (obra.periodo === "PERIODO_2022_2023" ? 8 : 4)
+                const numProcesos = obra.procesos?.length ?? 8
                 
                 return (
                 <Link

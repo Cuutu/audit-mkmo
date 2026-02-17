@@ -12,7 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { ArrowLeft, Info, Calendar, Building2 } from "lucide-react"
 import Link from "next/link"
 import { FileUpload } from "@/components/ui/file-upload"
-import { PERIODOS_OPTIONS, TIPOS_OBRA_OPTIONS, periodoRequiereTipoObra, getPeriodoInfo, PERIODOS } from "@/lib/periodos-config"
+import { PERIODOS_OPTIONS, TIPOS_OBRA_OPTIONS, periodoRequiereTipoObra, getPeriodoInfo, PERIODOS, getDescripcionProcesosPeriodo, getAñosParaPeriodo, getMesesParaPeriodoYAno } from "@/lib/periodos-config"
 
 const obraSchema = z.object({
   numero: z.string().min(1, "El número es requerido"),
@@ -34,7 +34,7 @@ const obraSchema = z.object({
   path: ["periodo"],
 }).refine((data) => {
   // Si el período requiere tipo de obra, debe estar presente
-  if (data.periodo === "PERIODO_2023_2024" && !data.tipoObraAuditoria) {
+  if (periodoRequiereTipoObra(data.periodo) && !data.tipoObraAuditoria) {
     return false
   }
   return true
@@ -69,40 +69,14 @@ export default function NuevaObraPage() {
   const selectedPeriodo = watch("periodo")
   const selectedAno = watch("ano")
   const selectedMes = watch("mes")
-  const requiereTipoObra = selectedPeriodo === "PERIODO_2023_2024"
+  const requiereTipoObra = periodoRequiereTipoObra(selectedPeriodo)
 
-  // Obtener los años válidos según el período seleccionado
-  const getAñosParaPeriodo = (periodo: string): number[] => {
-    switch (periodo) {
-      case "PERIODO_2022_2023":
-        return [2022, 2023]
-      case "PERIODO_2023_2024":
-        return [2023, 2024]
-      case "PERIODO_2024_2025":
-        return [2024, 2025]
-      default:
-        return [2022, 2023]
-    }
-  }
-
-  // Período va de 1 junio (año A) a 31 mayo (año B). Meses válidos:
-  // - Si el año es el primero del período: junio a diciembre (6-12)
-  // - Si el año es el segundo del período: enero a mayo (1-5)
-  const getMesesParaPeriodoYAno = (periodo: string, ano: string): number[] => {
-    if (!ano) return []
-    const años = getAñosParaPeriodo(periodo)
-    const añoNum = parseInt(ano)
-    if (añoNum === años[0]) {
-      return [6, 7, 8, 9, 10, 11, 12] // Junio a diciembre
-    }
-    if (añoNum === años[1]) {
-      return [1, 2, 3, 4, 5] // Enero a mayo
-    }
-    return []
-  }
-
-  const añosDisponibles = getAñosParaPeriodo(selectedPeriodo)
-  const mesesDisponibles = getMesesParaPeriodoYAno(selectedPeriodo, selectedAno)
+  // Años y meses desde configuración (sin hardcodear)
+  const añosDisponibles = getAñosParaPeriodo(selectedPeriodo as keyof typeof PERIODOS)
+  const mesesDisponibles = getMesesParaPeriodoYAno(
+    selectedPeriodo as keyof typeof PERIODOS,
+    selectedAno ? parseInt(selectedAno) : 0
+  )
 
   // Limpiar tipoObraAuditoria, año y mes si se cambia el período o el año
   useEffect(() => {
@@ -268,17 +242,11 @@ export default function NuevaObraPage() {
                 )}
               </div>
 
-              {/* Info del período seleccionado */}
+              {/* Info del período seleccionado (desde configuración) */}
               <div className="flex items-start gap-2 text-sm text-blue-600 dark:text-blue-300 bg-blue-100 dark:bg-blue-900/40 p-3 rounded-md">
                 <Info className="h-4 w-4 mt-0.5 flex-shrink-0" />
                 <div>
-                  {selectedPeriodo === "PERIODO_2022_2023" ? (
-                    <p>Este período incluye los <strong>procesos 1-8</strong> (definición técnica, proyecto, constatación, redeterminación, materiales, mano de obra, base de datos y análisis).</p>
-                  ) : selectedPeriodo === "PERIODO_2023_2024" ? (
-                    <p>Seleccione el tipo de obra: <strong>Obra Terminada</strong> (procesos 9-12) o <strong>Obra en Ejecución</strong> (procesos 13-16). Se crearán 4 procesos según el tipo seleccionado.</p>
-                  ) : (
-                    <p>Este período estará disponible <strong>próximamente</strong>.</p>
-                  )}
+                  <p>{getDescripcionProcesosPeriodo(selectedPeriodo as keyof typeof PERIODOS) || "Este período estará disponible próximamente."}</p>
                 </div>
               </div>
             </div>

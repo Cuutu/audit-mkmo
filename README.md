@@ -72,16 +72,16 @@ La aplicación estará disponible en `http://localhost:3000`
 - **ACCOUNTANT** - Responsable de procesos contables
 - **VIEWER** - Solo lectura
 
-## 📊 Procesos de Obra
+## 📊 Procesos (Programa de Control y Verificación - Ord. Nº 14.178)
 
-1. Definición técnica de la obra
-2. Proyecto / costo proyectado / cronograma
-3. Constatación (planos / revisiones / fotos)
-4. Método de redeterminación / desglose económico
-5. Materiales involucrados
-6. Mano de obra involucrada
-7. Creación de base de datos
-8. Análisis de resultados
+**Período 2022-2023 (1/06/2022 - 30/06/2023):**
+- Procesos contables (1-4): Rendición de Aporte, Pagos al Fideicomiso, Obras Finalizadas, Obras en Curso
+- Obra Terminada (5-8): Documentación Ejecutiva, Presupuesto y Prorrateo, Planos, Ubicación Física
+- Obra en Ejecución (9-12): Documentación Ejecutiva, Planos y Datos Técnicos, Presupuesto y Avance %, Ubicación Física
+
+**Períodos 2023-2024 y posteriores:**
+- Obra Terminada: procesos 9-12
+- Obra en Ejecución: procesos 13-16
 
 ## 🔍 Características Principales
 

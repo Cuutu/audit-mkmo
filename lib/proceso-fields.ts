@@ -1,9 +1,5 @@
 // Definición de campos estructurados por proceso
-
-import { TIPOS_OBRA } from "@/lib/periodos-config"
-
-// Opciones de Tipo de Obra para proceso 1 (solo aparece aquí, no al crear obra)
-const TIPOS_OBRA_PROCESO_1 = Object.values(TIPOS_OBRA).map((t) => t.nombre)
+// Fuente de verdad: Programa de Control y Verificación del Fideicomiso
 
 export interface CampoProceso {
   id: string
@@ -12,225 +8,324 @@ export interface CampoProceso {
   label: string
   placeholder?: string
   requerido?: boolean
-  opciones?: string[] // Para tipo select
+  opciones?: string[]
   valor?: any
-  descripcion?: string // Descripción o ayuda contextual
-  acceptedFiles?: string // Para tipo file, ej: ".pdf,.jpg,.png"
+  descripcion?: string
+  acceptedFiles?: string
 }
 
 // Estructura de campos por proceso (1-16)
+// 1-12: Período 2022-2023 | 9-16: Período 2023-2024 (9-12 y 13-16)
 export const camposPorProceso: Record<number, CampoProceso[]> = {
+  // ============================================================
+  // PROCESOS 1-4: CONTABLES (Período 2022-2023)
+  // ============================================================
   1: [
-    // Proceso 1: Definición técnica de la obra
     {
-      id: "descripcion_tecnica",
-      nombre: "descripcion_tecnica",
-      tipo: "textarea",
-      label: "Descripción Técnica",
-      requerido: true,
-    },
-    {
-      id: "tipo_obra",
-      nombre: "tipo_obra",
-      tipo: "select",
-      label: "Tipo de Obra",
-      requerido: true,
-      opciones: TIPOS_OBRA_PROCESO_1,
-    },
-    {
-      id: "ubicacion",
-      nombre: "ubicacion",
-      tipo: "text",
-      label: "Ubicación",
-      requerido: true,
-    },
-    {
-      id: "superficie",
-      nombre: "superficie",
+      id: "recaudacion_mensual",
+      nombre: "recaudacion_mensual",
       tipo: "number",
-      label: "Superficie (m²)",
+      label: "Recaudación Mensual ($)",
+      descripcion: "Rendición mensual del período",
+      requerido: true,
+    },
+    {
+      id: "responsable_nombre",
+      nombre: "responsable_nombre",
+      tipo: "text",
+      label: "Nombre del Responsable",
+      requerido: true,
+    },
+    {
+      id: "responsable_cargo",
+      nombre: "responsable_cargo",
+      tipo: "text",
+      label: "Cargo/Rol del Responsable",
+      requerido: true,
+    },
+    {
+      id: "notas",
+      nombre: "notas",
+      tipo: "textarea",
+      label: "Notas",
     },
   ],
   2: [
-    // Proceso 2: Proyecto / costo proyectado / cronograma
     {
-      id: "costo_proyectado",
-      nombre: "costo_proyectado",
-      tipo: "number",
-      label: "Costo Proyectado ($)",
-      requerido: true,
+      id: "balance_verificado",
+      nombre: "balance_verificado",
+      tipo: "checkbox",
+      label: "Coincidencia con balance del fideicomiso",
     },
     {
-      id: "fecha_inicio",
-      nombre: "fecha_inicio",
-      tipo: "date",
-      label: "Fecha de Inicio",
-      requerido: true,
-    },
-    {
-      id: "fecha_fin",
-      nombre: "fecha_fin",
-      tipo: "date",
-      label: "Fecha de Finalización Prevista",
-    },
-    {
-      id: "observaciones_cronograma",
-      nombre: "observaciones_cronograma",
+      id: "movimientos_periodo",
+      nombre: "movimientos_periodo",
       tipo: "textarea",
-      label: "Observaciones del Cronograma",
+      label: "Movimientos del Período",
+      descripcion: "Resumen de movimientos verificados",
+    },
+    {
+      id: "responsable_nombre",
+      nombre: "responsable_nombre",
+      tipo: "text",
+      label: "Nombre del Responsable",
+      requerido: true,
+    },
+    {
+      id: "responsable_cargo",
+      nombre: "responsable_cargo",
+      tipo: "text",
+      label: "Cargo/Rol del Responsable",
+      requerido: true,
     },
   ],
   3: [
-    // Proceso 3: Constatación
     {
-      id: "fecha_constatacion",
-      nombre: "fecha_constatacion",
-      tipo: "date",
-      label: "Fecha de Constatación",
+      id: "gastos_rendidos",
+      nombre: "gastos_rendidos",
+      tipo: "number",
+      label: "Gastos Rendidos ($)",
+      descripcion: "Costos de obras terminadas",
       requerido: true,
     },
     {
-      id: "planos_revisados",
-      nombre: "planos_revisados",
-      tipo: "checkbox",
-      label: "Planos Revisados",
+      id: "detalle_costos",
+      nombre: "detalle_costos",
+      tipo: "textarea",
+      label: "Detalle de Costos",
     },
     {
-      id: "revisiones_realizadas",
-      nombre: "revisiones_realizadas",
-      tipo: "number",
-      label: "Número de Revisiones",
+      id: "responsable_nombre",
+      nombre: "responsable_nombre",
+      tipo: "text",
+      label: "Nombre del Responsable",
+      requerido: true,
     },
     {
-      id: "fotos_registradas",
-      nombre: "fotos_registradas",
-      tipo: "number",
-      label: "Fotos Registradas",
+      id: "responsable_cargo",
+      nombre: "responsable_cargo",
+      tipo: "text",
+      label: "Cargo/Rol del Responsable",
+      requerido: true,
     },
   ],
   4: [
-    // Proceso 4: Método de redeterminación
     {
-      id: "metodo_redeterminacion",
-      nombre: "metodo_redeterminacion",
-      tipo: "select",
-      label: "Método de Redeterminación",
-      requerido: true,
-      opciones: ["Índices", "Relevamiento", "Mixto", "Otro"],
-    },
-    {
-      id: "desglose_economico",
-      nombre: "desglose_economico",
-      tipo: "textarea",
-      label: "Desglose Económico",
-    },
-    {
-      id: "prevision_fondos",
-      nombre: "prevision_fondos",
+      id: "gasto_mensual_ejecucion",
+      nombre: "gasto_mensual_ejecucion",
       tipo: "number",
-      label: "Previsión de Fondos ($)",
+      label: "Gasto Mensual en Ejecución ($)",
+      requerido: true,
+    },
+    {
+      id: "responsable_nombre",
+      nombre: "responsable_nombre",
+      tipo: "text",
+      label: "Nombre del Responsable",
+      requerido: true,
+    },
+    {
+      id: "responsable_cargo",
+      nombre: "responsable_cargo",
+      tipo: "text",
+      label: "Cargo/Rol del Responsable",
+      requerido: true,
+    },
+    {
+      id: "notas",
+      nombre: "notas",
+      tipo: "textarea",
+      label: "Notas",
     },
   ],
+
+  // ============================================================
+  // PROCESOS 5-8: TÉCNICOS OBRAS FINALIZADAS (Período 2022-2023)
+  // ============================================================
   5: [
-    // Proceso 5: Materiales
     {
-      id: "materiales_principales",
-      nombre: "materiales_principales",
+      id: "plan_referencia",
+      nombre: "plan_referencia",
       tipo: "textarea",
-      label: "Materiales Principales",
+      label: "Plan de Mejoras y Ampliación (u otro)",
+      descripcion: "Verificar plan de mejoras y ampliación",
       requerido: true,
     },
     {
-      id: "origen_materiales",
-      nombre: "origen_materiales",
-      tipo: "text",
-      label: "Origen de Materiales",
+      id: "fecha_inicio_verificada",
+      nombre: "fecha_inicio_verificada",
+      tipo: "date",
+      label: "Fecha de Inicio Verificada",
+      requerido: true,
     },
     {
-      id: "responsable_materiales",
-      nombre: "responsable_materiales",
+      id: "fecha_finalizacion",
+      nombre: "fecha_finalizacion",
+      tipo: "date",
+      label: "Fecha de Finalización",
+      requerido: true,
+    },
+    {
+      id: "responsable_nombre",
+      nombre: "responsable_nombre",
       tipo: "text",
-      label: "Responsable de Materiales",
+      label: "Nombre del Responsable",
+      requerido: true,
+    },
+    {
+      id: "responsable_cargo",
+      nombre: "responsable_cargo",
+      tipo: "text",
+      label: "Cargo/Rol del Responsable",
+      requerido: true,
+    },
+    {
+      id: "notas_documentacion",
+      nombre: "notas_documentacion",
+      tipo: "textarea",
+      label: "Notas sobre la Documentación",
     },
   ],
   6: [
-    // Proceso 6: Mano de obra
     {
-      id: "mano_obra_tercerizada",
-      nombre: "mano_obra_tercerizada",
-      tipo: "checkbox",
-      label: "Mano de Obra Tercerizada",
-    },
-    {
-      id: "cantidad_trabajadores",
-      nombre: "cantidad_trabajadores",
+      id: "presupuesto_inicial",
+      nombre: "presupuesto_inicial",
       tipo: "number",
-      label: "Cantidad de Trabajadores",
+      label: "Presupuesto Inicial ($)",
+      requerido: true,
     },
     {
-      id: "responsable_mano_obra",
-      nombre: "responsable_mano_obra",
+      id: "prorrateo_materiales",
+      nombre: "prorrateo_materiales",
+      tipo: "number",
+      label: "Prorrateo Materiales ($)",
+      requerido: true,
+    },
+    {
+      id: "prorrateo_materiales_detalle",
+      nombre: "prorrateo_materiales_detalle",
+      tipo: "textarea",
+      label: "Detalle de Materiales",
+    },
+    {
+      id: "prorrateo_mano_obra",
+      nombre: "prorrateo_mano_obra",
+      tipo: "number",
+      label: "Prorrateo Mano de Obra ($)",
+      requerido: true,
+    },
+    {
+      id: "prorrateo_mano_obra_detalle",
+      nombre: "prorrateo_mano_obra_detalle",
+      tipo: "textarea",
+      label: "Detalle de Mano de Obra",
+    },
+    {
+      id: "responsable_nombre",
+      nombre: "responsable_nombre",
       tipo: "text",
-      label: "Responsable de Mano de Obra",
+      label: "Nombre del Responsable",
+      requerido: true,
     },
     {
-      id: "pagos_realizados",
-      nombre: "pagos_realizados",
-      tipo: "number",
-      label: "Pagos Realizados ($)",
+      id: "responsable_cargo",
+      nombre: "responsable_cargo",
+      tipo: "text",
+      label: "Cargo/Rol del Responsable",
+      requerido: true,
     },
   ],
   7: [
-    // Proceso 7: Creación de base de datos
     {
-      id: "estructura_bd",
-      nombre: "estructura_bd",
+      id: "descripcion_tecnica_finalidad",
+      nombre: "descripcion_tecnica_finalidad",
       tipo: "textarea",
-      label: "Estructura de Base de Datos",
+      label: "Descripción Técnica de la Finalidad",
       requerido: true,
     },
     {
-      id: "orden_datos",
-      nombre: "orden_datos",
-      tipo: "textarea",
-      label: "Orden de Carga de Datos",
+      id: "cantidad_planos",
+      nombre: "cantidad_planos",
+      tipo: "number",
+      label: "Cantidad de Planos",
     },
     {
-      id: "fecha_carga",
-      nombre: "fecha_carga",
-      tipo: "date",
-      label: "Fecha de Carga",
+      id: "registro_modificaciones",
+      nombre: "registro_modificaciones",
+      tipo: "textarea",
+      label: "Registro de Modificaciones y Revisiones",
+    },
+    {
+      id: "responsable_nombre",
+      nombre: "responsable_nombre",
+      tipo: "text",
+      label: "Nombre del Responsable",
+      requerido: true,
+    },
+    {
+      id: "responsable_cargo",
+      nombre: "responsable_cargo",
+      tipo: "text",
+      label: "Cargo/Rol del Responsable",
+      requerido: true,
     },
   ],
   8: [
-    // Proceso 8: Análisis de resultados
     {
-      id: "resultados_obtenidos",
-      nombre: "resultados_obtenidos",
+      id: "ubicacion_texto",
+      nombre: "ubicacion_texto",
       tipo: "textarea",
-      label: "Resultados Obtenidos",
+      label: "Detalle de Ubicación / Geolocalización",
       requerido: true,
     },
     {
-      id: "conclusiones",
-      nombre: "conclusiones",
-      tipo: "textarea",
-      label: "Conclusiones",
+      id: "geo_latitud",
+      nombre: "geo_latitud",
+      tipo: "text",
+      label: "Latitud",
+      placeholder: "Ej: -34.6037",
     },
     {
-      id: "recomendaciones",
-      nombre: "recomendaciones",
+      id: "geo_longitud",
+      nombre: "geo_longitud",
+      tipo: "text",
+      label: "Longitud",
+      placeholder: "Ej: -58.3816",
+    },
+    {
+      id: "cantidad_fotos",
+      nombre: "cantidad_fotos",
+      tipo: "number",
+      label: "Cantidad de Fotos Registradas",
+    },
+    {
+      id: "descripcion_fotos",
+      nombre: "descripcion_fotos",
       tipo: "textarea",
-      label: "Recomendaciones",
+      label: "Descripción del Registro Fotográfico",
+    },
+    {
+      id: "responsable_nombre",
+      nombre: "responsable_nombre",
+      tipo: "text",
+      label: "Nombre del Responsable",
+      requerido: true,
+    },
+    {
+      id: "responsable_cargo",
+      nombre: "responsable_cargo",
+      tipo: "text",
+      label: "Cargo/Rol del Responsable",
+      requerido: true,
     },
   ],
 
   // ============================================================
-  // PROCESOS 9-12: OBRAS TERMINADAS (Períodos 2023-2024 y 2024-2025)
+  // PROCESOS 9-12: TÉCNICOS OBRAS EN CURSO (Período 2022-2023)
+  // y OBRAS TERMINADAS (Período 2023-2024)
   // ============================================================
-
   9: [
-    // Proceso 9: Documentación Ejecutiva de la Obra (Terminada)
+    // Documentación Ejecutiva (obras en curso 2022-2023) / Doc Ejecutiva (obras terminadas 2023-2024)
     {
       id: "plan_referencia",
       nombre: "plan_referencia",
@@ -642,28 +737,71 @@ export function getCamposProceso(numeroProceso: number): CampoProceso[] {
   return camposPorProceso[numeroProceso] || []
 }
 
-// Información adicional de procesos 9-16 (objetivos y evidencias requeridas)
-export const infoProcesosPeriodo2 = {
+// Información adicional: objetivos y evidencias por proceso
+// Procesos 1-12: Período 2022-2023 | Procesos 9-16: Período 2023-2024
+export const infoProcesosPeriodo2: Record<number, { objetivo: string; evidencia: string; categoria: string }> = {
+  1: {
+    objetivo: "Constatar la recaudación mensual",
+    evidencia: "Documentación probatoria mensual con identificación del responsable",
+    categoria: "PROCESOS CONTABLES",
+  },
+  2: {
+    objetivo: "Verificar coincidencia con el balance del fideicomiso",
+    evidencia: "Documentación probatoria mensual",
+    categoria: "PROCESOS CONTABLES",
+  },
+  3: {
+    objetivo: "Constatar gastos rendidos de las obras",
+    evidencia: "Documentación probatoria del costo con identificación del responsable",
+    categoria: "PROCESOS CONTABLES",
+  },
+  4: {
+    objetivo: "Verificar gasto mensual en ejecución",
+    evidencia: "Documentación probatoria mensual con identificación del responsable",
+    categoria: "PROCESOS CONTABLES",
+  },
+  5: {
+    objetivo: "Verificar plan de mejoras y ampliación u otro",
+    evidencia: "Documentación probatoria con identificación del responsable",
+    categoria: "OBRAS FINALIZADAS",
+  },
+  6: {
+    objetivo: "Discriminación del gasto (materiales y mano de obra)",
+    evidencia: "Documentación probatoria con identificación del responsable",
+    categoria: "OBRAS FINALIZADAS",
+  },
+  7: {
+    objetivo: "Conformar archivo/registro técnico de obras",
+    evidencia: "Documentación probatoria con identificación del responsable",
+    categoria: "OBRAS FINALIZADAS",
+  },
+  8: {
+    objetivo: "Detalle de ubicación/geolocalización y registro fotográfico",
+    evidencia: "Registro fotográfico / evidencia",
+    categoria: "OBRAS FINALIZADAS",
+  },
   9: {
-    objetivo: "Identificar dentro del Plan de Mejoras y Ampliación u otro; verificar fecha de inicio.",
-    evidencia: "Documentación probatoria con identificación del responsable.",
-    categoria: "OBRA TERMINADA",
+    objetivo: "Verificar plan de mejoras y ampliación u otro",
+    evidencia: "Documentación probatoria con identificación del responsable",
+    categoria: "OBRAS EN CURSO",
   },
   10: {
-    objetivo: "Discriminación del gasto; fecha de inicio y finalización.",
-    evidencia: "Documentación probatoria con identificación del responsable.",
-    categoria: "OBRA TERMINADA",
+    objetivo: "Conformar archivo/registro de obras",
+    evidencia: "Documentación probatoria con identificación del responsable",
+    categoria: "OBRAS EN CURSO",
   },
   11: {
-    objetivo: "Registrar modificaciones y revisiones; conformar archivo y registro de obras.",
-    evidencia: "Documentación probatoria con identificación del responsable.",
-    categoria: "OBRA TERMINADA",
+    objetivo: "Constatar avance de ejecución",
+    evidencia: "Documentación probatoria con identificación del responsable",
+    categoria: "OBRAS EN CURSO",
   },
   12: {
-    objetivo: "Detalle de ubicación o geolocalización de la obra.",
-    evidencia: "Registro fotográfico de obras.",
-    categoria: "OBRA TERMINADA",
+    objetivo: "Detalle ubicación/geolocalización (demarcación planimétrica)",
+    evidencia: "Registro planimétrico / evidencia",
+    categoria: "OBRAS EN CURSO",
   },
+  // Procesos 9-12 en contexto 2023-2024 (Obras Terminadas) - usado cuando periodo es 2023-2024
+  // Nota: 9-12 arriba es para 2022-2023 obras en curso. Para 2023-2024 obras terminadas ver infoProcesosObrasTerminadas2324
   13: {
     objetivo: "Identificar dentro del Plan de Mejoras y Ampliación u otro; verificar fecha de inicio.",
     evidencia: "Documentación probatoria con identificación del responsable.",
@@ -686,7 +824,43 @@ export const infoProcesosPeriodo2 = {
   },
 }
 
-export function getInfoProceso(numeroProceso: number) {
-  return infoProcesosPeriodo2[numeroProceso as keyof typeof infoProcesosPeriodo2] || null
+// Info para procesos 9-12 cuando son Obras Terminadas (período 2023-2024)
+const infoProcesosObrasTerminadas2324: Record<number, { objetivo: string; evidencia: string; categoria: string }> = {
+  9: {
+    objetivo: "Identificar dentro del Plan de Mejoras y Ampliación u otro; verificar fecha de inicio.",
+    evidencia: "Documentación probatoria con identificación del responsable.",
+    categoria: "OBRAS TERMINADAS",
+  },
+  10: {
+    objetivo: "Discriminación del gasto; fecha de inicio y finalización.",
+    evidencia: "Documentación probatoria con identificación del responsable.",
+    categoria: "OBRAS TERMINADAS",
+  },
+  11: {
+    objetivo: "Registrar modificaciones y revisiones; conformar archivo y registro de obras.",
+    evidencia: "Documentación probatoria con identificación del responsable.",
+    categoria: "OBRAS TERMINADAS",
+  },
+  12: {
+    objetivo: "Detalle de ubicación o geolocalización de la obra.",
+    evidencia: "Registro fotográfico de obras.",
+    categoria: "OBRAS TERMINADAS",
+  },
+}
+
+export function getInfoProceso(
+  numeroProceso: number,
+  obra?: { periodo?: string | null; tipoObraAuditoria?: string | null }
+) {
+  // Período 2023-2024, Obra Terminada: procesos 9-12 usan info de obras terminadas
+  if (
+    obra?.periodo === "PERIODO_2023_2024" &&
+    obra?.tipoObraAuditoria === "TERMINADA" &&
+    numeroProceso >= 9 &&
+    numeroProceso <= 12
+  ) {
+    return infoProcesosObrasTerminadas2324[numeroProceso] || null
+  }
+  return infoProcesosPeriodo2[numeroProceso] || null
 }
 
