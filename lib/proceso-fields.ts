@@ -474,6 +474,13 @@ export const camposPorProceso: Record<number, CampoProceso[]> = {
       label: "Fecha Última Revisión",
     },
     {
+      id: "monto_ejecutado",
+      nombre: "monto_ejecutado",
+      tipo: "number",
+      label: "Monto Ejecutado ($)",
+      descripcion: "Monto ejecutado del proceso",
+    },
+    {
       id: "responsable_nombre",
       nombre: "responsable_nombre",
       tipo: "text",
