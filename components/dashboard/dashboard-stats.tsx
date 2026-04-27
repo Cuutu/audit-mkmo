@@ -1,12 +1,17 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { useRouter, usePathname, useSearchParams } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from "recharts"
 import { Building2, Clock, TrendingUp, CheckCircle2, AlertTriangle } from "lucide-react"
 
+const MIN_ANO_DESDE = 2022
+
 interface DashboardStatsProps {
-  obrasPorMes: Array<{ mes: string; cantidad: number }>
+  obrasPorAno: Array<{ anio: string; cantidad: number }>
+  desdeAno: number
+  anioActual: number
   obrasPorEstado: Array<{ estado: string; cantidad: number }>
   avancePromedio: number
   etapasAtrasadas: number
@@ -16,13 +21,27 @@ const COLORS_LIGHT = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"]
 const COLORS_DARK = ["#60a5fa", "#34d399", "#fbbf24", "#fb923c"]
 
 export function DashboardStats({
-  obrasPorMes,
+  obrasPorAno,
+  desdeAno,
+  anioActual,
   obrasPorEstado,
   avancePromedio,
   etapasAtrasadas,
 }: DashboardStatsProps) {
+  const router = useRouter()
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
   const [isDark, setIsDark] = useState(false)
   const [mounted, setMounted] = useState(false)
+
+  const opcionesDesdeAno: number[] = []
+  for (let y = MIN_ANO_DESDE; y <= anioActual; y++) opcionesDesdeAno.push(y)
+
+  const onDesdeAnoChange = (value: string) => {
+    const params = new URLSearchParams(searchParams.toString())
+    params.set("desde", value)
+    router.push(`${pathname}?${params.toString()}`)
+  }
 
   useEffect(() => {
     setMounted(true)
@@ -65,17 +84,36 @@ export function DashboardStats({
 
   return (
     <div className="space-y-6">
-      {/* Gráfico de Obras por Mes */}
+      {/* Gráfico de Obras por año (campo año de la obra) */}
       <Card className="border-0 shadow-soft">
-        <CardHeader className="pb-4">
-          <CardTitle className="text-lg">Obras por Mes</CardTitle>
-          <CardDescription className="text-sm">Distribución de obras creadas por mes</CardDescription>
+        <CardHeader className="pb-4 space-y-3 sm:flex sm:flex-row sm:items-start sm:justify-between sm:space-y-0 gap-3">
+          <div className="space-y-1.5">
+            <CardTitle className="text-lg">Obras por Año</CardTitle>
+            <CardDescription className="text-sm">
+              Cantidad de obras por año del registro (año/mes de obra), desde el año elegido
+            </CardDescription>
+          </div>
+          <label className="flex flex-col gap-1 text-xs text-muted-foreground shrink-0">
+            <span className="font-medium">Desde año</span>
+            <select
+              className="h-9 min-w-[7rem] rounded-md border border-input bg-background px-3 py-1 text-sm text-foreground shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              value={desdeAno}
+              onChange={(e) => onDesdeAnoChange(e.target.value)}
+              aria-label="Filtrar gráfico desde año"
+            >
+              {opcionesDesdeAno.map((y) => (
+                <option key={y} value={y}>
+                  {y}
+                </option>
+              ))}
+            </select>
+          </label>
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={obrasPorMes}>
+            <BarChart data={obrasPorAno}>
               <CartesianGrid strokeDasharray="3 3" stroke={gridColor} opacity={0.3} />
-              <XAxis dataKey="mes" stroke={chartTextColor} />
+              <XAxis dataKey="anio" stroke={chartTextColor} />
               <YAxis stroke={chartTextColor} />
               <Tooltip 
                 contentStyle={{

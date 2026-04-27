@@ -8,8 +8,24 @@ import { Building2, Search, FileText, TrendingUp, Clock, CheckCircle2, AlertTria
 import { formatDate } from "@/lib/utils"
 import { DashboardStats } from "@/components/dashboard/dashboard-stats"
 
-export default async function DashboardPage() {
+const MIN_ANO_DESDE = 2022
+
+type DashboardPageProps = {
+  searchParams: Record<string, string | string[] | undefined>
+}
+
+function parseDesdeAno(searchParams: DashboardPageProps["searchParams"], anioActual: number): number {
+  const raw = searchParams.desde
+  const s = Array.isArray(raw) ? raw[0] : raw
+  const n = s ? parseInt(s, 10) : NaN
+  if (Number.isNaN(n)) return MIN_ANO_DESDE
+  return Math.min(Math.max(n, MIN_ANO_DESDE), anioActual)
+}
+
+export default async function DashboardPage({ searchParams }: DashboardPageProps) {
   const session = await getServerSession(authOptions)
+  const anioActual = new Date().getFullYear()
+  const desdeAno = parseDesdeAno(searchParams, anioActual)
   
   // Obtener KPIs
   const [obrasCount, obrasEnAuditoria, obrasPendientes, obrasCerradas] = await Promise.all([
@@ -32,14 +48,12 @@ export default async function DashboardPage() {
   })
 
   // Obtener estadísticas optimizadas usando agregaciones
-  const [obrasPorMesData, obrasPorEstadoData, avanceData] = await Promise.all([
-    // Obras por mes (últimos 6 meses) - usando agregación
+  const [obrasPorAnoData, obrasPorEstadoData, avanceData] = await Promise.all([
     prisma.obra.groupBy({
-      by: ["mes", "ano"],
-      where: { deleted: false },
+      by: ["ano"],
+      where: { deleted: false, ano: { gte: desdeAno } },
       _count: true,
-      orderBy: [{ ano: "desc" }, { mes: "desc" }],
-      take: 6,
+      orderBy: { ano: "asc" },
     }),
     // Obras por estado - usando agregación
     prisma.obra.groupBy({
@@ -54,14 +68,14 @@ export default async function DashboardPage() {
     }),
   ])
 
-  // Formatear datos para gráficos
-  const meses = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"]
-  const obrasPorMesArray = obrasPorMesData
-    .reverse() // Ordenar cronológicamente
-    .map((item) => ({
-      mes: `${meses[item.mes - 1]} ${item.ano}`,
-      cantidad: item._count,
-    }))
+  const countPorAno = new Map(obrasPorAnoData.map((item) => [item.ano, item._count]))
+  const obrasPorAnoArray: Array<{ anio: string; cantidad: number }> = []
+  for (let y = desdeAno; y <= anioActual; y++) {
+    obrasPorAnoArray.push({
+      anio: String(y),
+      cantidad: countPorAno.get(y) ?? 0,
+    })
+  }
 
   const obrasPorEstadoArray = obrasPorEstadoData.map((item) => ({
     estado: item.estado,
@@ -158,7 +172,9 @@ export default async function DashboardPage() {
 
       {/* Gráficos y Estadísticas */}
       <DashboardStats
-        obrasPorMes={obrasPorMesArray}
+        obrasPorAno={obrasPorAnoArray}
+        desdeAno={desdeAno}
+        anioActual={anioActual}
         obrasPorEstado={obrasPorEstadoArray}
         avancePromedio={avancePromedio}
         etapasAtrasadas={procesosAtrasados}
